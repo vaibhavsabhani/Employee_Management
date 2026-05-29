@@ -12,9 +12,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field";
 
-export const isRequiredLabel = (
-  <span className="text-red-500">*</span>
-);
+export const isRequiredLabel = <span className="text-red-500">*</span>;
 
 function InputField({
   control,
@@ -22,7 +20,7 @@ function InputField({
   label,
   placeholder,
   type = "text",
-  isRequired = false,
+  required = false,
   className = "",
   description,
   hideInput = false,
@@ -41,11 +39,7 @@ function InputField({
     if (hideInput) return null;
 
     const inputType =
-      type === "password"
-        ? showPassword
-          ? "text"
-          : "password"
-        : type;
+      type === "password" ? (showPassword ? "text" : "password") : type;
 
     const isNumber = type === "number";
 
@@ -72,15 +66,9 @@ function InputField({
           <button
             type="button"
             className="absolute right-3 top-1/2 -translate-y-1/2"
-            onClick={() =>
-              setShowPassword((prev) => !prev)
-            }
+            onClick={() => setShowPassword((prev) => !prev)}
           >
-            {showPassword ? (
-              <EyeOff size={18} />
-            ) : (
-              <Eye size={18} />
-            )}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>
@@ -96,31 +84,29 @@ function InputField({
           <Field>
             {isLabelWithText ? (
               <div className="flex items-center justify-between">
-                <FieldLabel htmlFor={name}>
-                  {label} {isRequired && isRequiredLabel}
+                <FieldLabel
+                  htmlFor={name}
+                  className={fieldState.error ? "text-red-500" : ""}
+                >
+                  {label} {required && isRequiredLabel}
                 </FieldLabel>
 
                 {textAfterLabel}
               </div>
             ) : (
-              <FieldLabel htmlFor={name}>
-                {label} {isRequired && isRequiredLabel}
+              <FieldLabel
+                htmlFor={name}
+                className={fieldState.error ? "text-red-500" : ""}
+              >
+                {label} {required && isRequiredLabel}
               </FieldLabel>
             )}
 
             {renderInput(field, fieldState)}
 
-            {description && (
-              <FieldDescription>
-                {description}
-              </FieldDescription>
-            )}
+            {description && <FieldDescription>{description}</FieldDescription>}
 
-            {fieldState.error && (
-              <FieldError
-                errors={[fieldState.error]}
-              />
-            )}
+            {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />
@@ -130,14 +116,10 @@ function InputField({
   return (
     <Field>
       <FieldLabel htmlFor={name}>
-        {label} {isRequired && isRequiredLabel}
+        {label} {required && isRequiredLabel}
       </FieldLabel>
 
-      {!hideInput &&
-        renderInput(
-          { value, onChange },
-          { invalid: false }
-        )}
+      {!hideInput && renderInput({ value, onChange }, { invalid: false })}
     </Field>
   );
 }

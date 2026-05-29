@@ -3,14 +3,10 @@ import bcrypt from "bcryptjs";
 
 export const addUser = async (req, res) => {
   try {
-    const {
-      firstName,
-      middleName,
-      lastName,
-      email,
-      phoneNumber,
-      profilePicture,
-    } = req.body;
+    console.log("req.body:", req.body);
+    console.log("req.file:", req.file);
+    const { firstName, middleName, lastName, email, phoneNumber } = req.body;
+    const profilePicture = req.file?.path || "";
 
     // Validation
     if (!firstName?.trim()) {
@@ -47,10 +43,7 @@ export const addUser = async (req, res) => {
     // Default password
     const defaultPassword = "Abcde@012024";
 
-    const hashedPassword = await bcrypt.hash(
-      defaultPassword,
-      10
-    );
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
     // Create employee
     const employee = await User.create({
@@ -74,7 +67,6 @@ export const addUser = async (req, res) => {
       message: "Employee added successfully",
       employee: employeeResponse,
     });
-
   } catch (err) {
     console.error("Add Employee Error:", err);
 
@@ -144,7 +136,10 @@ export const updateUser = async (req, res) => {
 
     if (updates.email) {
       updates.email = updates.email.toLowerCase().trim();
-      const existing = await User.findOne({ email: updates.email, _id: { $ne: id } });
+      const existing = await User.findOne({
+        email: updates.email,
+        _id: { $ne: id },
+      });
       if (existing) {
         return res.status(400).json({ message: "Email already in use" });
       }
@@ -154,7 +149,9 @@ export const updateUser = async (req, res) => {
       updates.password = await bcrypt.hash(updates.password, 10);
     }
 
-    const updated = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password");
+    const updated = await User.findByIdAndUpdate(id, updates, {
+      new: true,
+    }).select("-password");
     if (!updated) {
       return res.status(404).json({ message: "User not found" });
     }

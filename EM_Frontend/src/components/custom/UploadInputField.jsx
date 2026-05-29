@@ -36,7 +36,7 @@ function UploadInput({
   name,
   label,
   placeholder = "Click here to select the files you wish to upload.",
-  isRequired = false,
+  required = false,
   isSelect = true,
   className = "",
   type = "file",
@@ -196,7 +196,7 @@ function UploadInput({
             {label && (
               <FieldLabel>
                 {label}
-                {isRequired && (
+                {required && (
                   <span className="text-red-500">
                     *
                   </span>
@@ -234,7 +234,7 @@ function UploadInput({
       {label && (
         <FieldLabel>
           {label}
-          {isRequired && (
+          {required && (
             <span className="text-red-500">
               *
             </span>

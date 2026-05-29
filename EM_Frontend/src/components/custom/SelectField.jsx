@@ -30,7 +30,7 @@ function SelectField({
   label,
   placeholder,
   options = [],
-  isRequired = false,
+  required = false,
   hideLabel = false,
   disabled = false,
   className = "",
@@ -84,7 +84,7 @@ function SelectField({
           {!hideLabel && (
             <FieldLabel>
               {label}
-              {isRequired && isRequiredLabel}
+              {required && isRequiredLabel}
             </FieldLabel>
           )}
 
