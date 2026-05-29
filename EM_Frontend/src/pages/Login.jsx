@@ -23,31 +23,17 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(schema) });
 
-const onSubmit = async (data) => {
-  try {
-    const response = await login(data).unwrap();
-
-    console.log("Login Response:", response);
-
-    // Store token
-    localStorage.setItem("token", response.token);
-
-    // Store user
-    localStorage.setItem(
-      "user",
-      JSON.stringify(response.user)
-    );
-
-    // Navigate dashboard
-    navigate("/dashboard");
-  } catch (error) {
-    console.log("Login Error:", error);
-
-    alert(
-      error?.data?.message || "Something went wrong"
-    );
-  }
-};
+  const onSubmit = async (data) => {
+    try {
+      const response = await login(data).unwrap();
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      navigate("/dashboard");
+    } catch (error) {
+      console.log("Login Error:", error);
+      alert(error?.data?.message || "Something went wrong");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
