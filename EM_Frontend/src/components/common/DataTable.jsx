@@ -1,6 +1,7 @@
 import React from 'react'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import Pagination from '@/components/ui/pagination'
+import { Loader } from '@/components/ui/loader'
 
 export default function DataTable({
   columns = [],
@@ -41,7 +42,13 @@ export default function DataTable({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="py-12 text-center text-slate-400 font-medium">
-                  {loading ? 'Loading...' : 'No records found.'}
+                  {loading ? (
+                    <div className="flex justify-center">
+                      <Loader size="lg" spinnerOnly = {true} />
+                    </div>
+                  ) : (
+                    'No records found.'
+                  )}
                 </TableCell>
               </TableRow>
             )}
@@ -54,6 +61,7 @@ export default function DataTable({
         limit={limit}
         total={total}
         totalPages={totalPages}
+        displayData={data}
         onPageChange={onPageChange}
         onLimitChange={onLimitChange}
       />

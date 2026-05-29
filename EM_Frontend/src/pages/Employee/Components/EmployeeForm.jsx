@@ -8,8 +8,9 @@ import UploadInput from "@/components/custom/UploadInputField";
 import employeeSchema from "./EmployeeSchema";
 import { ROLES } from "@/constant/roles";
 import { RoleStatus } from "@/constant/constant";
+import { Button } from "@/components/ui/button";
 
-const EmployeeForm = ({ handleSubmit, isEdit }) => {
+const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
   const form = useForm({
     resolver: zodResolver(employeeSchema),
     defaultValues: {
@@ -25,7 +26,7 @@ const EmployeeForm = ({ handleSubmit, isEdit }) => {
   });
 
   const onSubmit = (data) => {
-      handleSubmit(data);
+    handleSubmit(data);
   };
 
   return (
@@ -47,16 +48,13 @@ const EmployeeForm = ({ handleSubmit, isEdit }) => {
             </div>
 
             <div className="flex gap-3">
-              <button type="button" className="border px-4 py-2 rounded-md">
+              <Button variant="outline" type="button" className="py-6" disabled={isLoading}>
                 Cancel
-              </button>
+              </Button>
 
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md"
-              >
+              <Button type="submit" className="py-6 cursor-pointer" disabled={isLoading}>
                 Save Changes
-              </button>
+              </Button>
             </div>
           </div>
 

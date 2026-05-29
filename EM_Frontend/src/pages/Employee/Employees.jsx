@@ -112,7 +112,7 @@ const Employees = () => {
             Employee Directory
           </h1>
           <p className="text-sm text-slate-500">
-            Manage 5000 staff members across all departments.
+            Manage {total} staff members across all departments.
           </p>
         </div>
         <div className="flex items-center gap-3">

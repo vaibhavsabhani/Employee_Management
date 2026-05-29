@@ -1,5 +1,5 @@
-import React from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Pagination({
   hidePagination = false,
@@ -18,7 +18,7 @@ export default function Pagination({
 }) {
   if (hidePagination) return null;
 
-  const totalRecords = typeof total === 'number' ? total : 0;
+  const totalRecords = typeof total === "number" ? total : 0;
   const displayLen = Array.isArray(displayData) ? displayData.length : 0;
 
   const canPrev = page > 1;
@@ -46,7 +46,10 @@ export default function Pagination({
   const visiblePages = makeVisiblePages();
 
   const jumpToPage = (p) => {
-    if (p >= 1 && p <= (totalPages || Math.ceil(totalRecords / (limit || 1)) || 1)) {
+    if (
+      p >= 1 &&
+      p <= (totalPages || Math.ceil(totalRecords / (limit || 1)) || 1)
+    ) {
       onPageChange(p);
     }
   };
@@ -56,55 +59,18 @@ export default function Pagination({
 
   return (
     <div
-      className={`flex max-[570px]:flex-col min-[1033px]:flex-row flex-col min-[1033px]:gap-0 gap-3 items-center justify-between px-2 pt-4 ${className}`}
+      className={`flex max-[570px]:flex-col min-[1033px]:flex-row flex-col min-[1033px]:gap-0 gap-3 items-center justify-between  p-4 ${className}`}
       id="hidePagination"
     >
-      {/* LEFT */}
-      <div>
-        <div className="text-sm text-slate-500">Showing {startRecord}-{endRecord} of {totalRecords} employees</div>
-      </div>
-
-      {/* CENTER - page buttons */}
-      {displayLen > 0 && totalRecords > 9 && (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => jumpToPage(Math.max(1, page - 1))}
-            disabled={!canPrev}
-            className="p-2 rounded border bg-white disabled:opacity-40"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {visiblePages.map((p) => (
-            <button
-              key={p}
-              onClick={() => jumpToPage(p)}
-              className={`px-3 py-1 rounded ${p === page ? 'bg-indigo-600 text-white' : 'border bg-white text-slate-700'}`}
-            >
-              {p}
-            </button>
-          ))}
-
-          <button
-            onClick={() => jumpToPage(Math.min(totalPages || Math.ceil(totalRecords / (limit || 1)), page + 1))}
-            disabled={!canNext}
-            className="p-2 rounded border bg-white disabled:opacity-40"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* RIGHT - limit selector */}
       {onLimitChange && displayLen > 0 && totalRecords > 9 && (
         <div className="flex items-center gap-2">
           <select
-            value={String(limit ?? '')}
+            value={String(limit ?? "")}
             onChange={(e) => onLimitChange(Number(e.target.value))}
             className="h-8 border rounded px-2 bg-white"
           >
             {limitSelectOptions.map((opt) => {
-              if (typeof opt === 'object') {
+              if (typeof opt === "object") {
                 return (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -123,6 +89,49 @@ export default function Pagination({
           <span className="text-sm">Rows</span>
         </div>
       )}
+
+      <div>
+        <div className="text-sm text-slate-500">
+          Showing {startRecord}-{endRecord} of {totalRecords} employees
+        </div>
+      </div>
+
+      {displayLen > 0 && totalRecords > 9 && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => jumpToPage(Math.max(1, page - 1))}
+            disabled={!canPrev}
+            className="p-2 rounded border bg-white disabled:opacity-40"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {visiblePages.map((p) => (
+            <button
+              key={p}
+              onClick={() => jumpToPage(p)}
+              className={`px-3 py-1 rounded ${p === page ? "bg-indigo-600 text-white" : "border bg-white text-slate-700"}`}
+            >
+              {p}
+            </button>
+          ))}
+
+          <button
+            onClick={() =>
+              jumpToPage(
+                Math.min(
+                  totalPages || Math.ceil(totalRecords / (limit || 1)),
+                  page + 1,
+                ),
+              )
+            }
+            disabled={!canNext}
+            className="p-2 rounded border bg-white disabled:opacity-40"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
-  )
+  );
 }
