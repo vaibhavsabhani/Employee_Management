@@ -39,7 +39,7 @@ export const login = async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "7d",
+        expiresIn: "24h",
       },
     );
 
@@ -53,6 +53,20 @@ export const login = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (err) {
+    return res.status(500).json({
       success: false,
       error: err.message,
     });

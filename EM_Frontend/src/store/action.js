@@ -1,3 +1,3 @@
-import { useLoginMutation } from "./Action/auth";
+import { useLoginMutation, useLogoutMutation } from "./Action/auth";
 
-export { useLoginMutation };
+export { useLoginMutation, useLogoutMutation };
