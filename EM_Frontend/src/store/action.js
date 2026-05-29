@@ -6,6 +6,7 @@ import {
   useGetEmployeeByIdQuery,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
+  useLazyGetEmployeesQuery,
 } from "./Action/Employee";
 
 export {
@@ -16,4 +17,5 @@ export {
   useGetEmployeeByIdQuery,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
+  useLazyGetEmployeesQuery
 };

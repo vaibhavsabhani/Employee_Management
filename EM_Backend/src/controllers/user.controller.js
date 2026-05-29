@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
+import { paginateQuery } from "../utils/paginatedQuery.js";
 
 export const addUser = async (req, res) => {
   try {
@@ -78,40 +79,28 @@ export const addUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
-    const skip = (page - 1) * limit;
-
-    const search = (req.query.search || "").trim();
-    const filter = {};
-    if (search) {
-      const regex = new RegExp(search, "i");
-      filter.$or = [
-        { firstName: regex },
-        { lastName: regex },
-        { email: regex },
-      ];
-    }
-
-    const [total, users] = await Promise.all([
-      User.countDocuments(filter),
-      User.find(filter)
-        .select("-password")
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 }),
-    ]);
+    const result = await paginateQuery({
+      model: User,
+      query: req.query,
+      searchFields: ["firstName", "middleName", "lastName", "email"],
+      select: "-password",
+    });
 
     return res.status(200).json({
       success: true,
-      page,
-      limit,
-      total,
-      users,
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      totalPages: result.totalPages,
+      users: result.data,
     });
-  } catch (err) {
-    console.error("Get Users Error:", err);
-    return res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    console.error("Get Users Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 

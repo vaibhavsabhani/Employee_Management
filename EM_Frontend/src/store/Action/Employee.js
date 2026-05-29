@@ -1,6 +1,11 @@
 import { API_HOST } from "@/constant/constant";
-import { commonHeaders } from "@/utils/utils";
+import { cleanParams, commonHeaders } from "@/utils/utils";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+  setEmployee,
+  setEmployeeError,
+  setEmployeeLoading,
+} from "../Reducer/Employee";
 
 export const employeeApi = createApi({
   reducerPath: "employeeApi",
@@ -23,11 +28,50 @@ export const employeeApi = createApi({
     }),
 
     getEmployees: builder.query({
-      query: () => ({
-        url: "/employee",
-        method: "GET",
-      }),
-      providesTags: ["Employee"],
+      query: ({ filters = {}, page = 1, limit = 10, offset } = {}) => {
+        const cleanedFilters = cleanParams(filters);
+
+        if (offset === undefined || offset === null) {
+          offset = (page - 1) * limit;
+        }
+
+        const params = new URLSearchParams();
+
+        Object.entries(cleanedFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            params.append(key, String(value));
+          }
+        });
+
+        params.append("offset", String(offset));
+        params.append("limit", String(limit));
+
+        return {
+          url: `/employee?${params.toString()}`,
+          method: "GET",
+        };
+      },
+
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setEmployeeLoading());
+
+        try {
+          const response = await queryFulfilled;
+
+          const payload = response.data || {};
+
+          dispatch(
+            setEmployee({
+              data: payload.users || payload.data || [],
+              total: payload.total || 0,
+            }),
+          );
+        } catch (e) {
+          console.log(">>>>>setEmployee error", e);
+
+          dispatch(setEmployeeError(e?.message || "Failed to load employee"));
+        }
+      },
     }),
 
     getEmployeeById: builder.query({
@@ -58,9 +102,10 @@ export const employeeApi = createApi({
 });
 
 export const {
-useAddEmployeeMutation,
-useGetEmployeesQuery,
-useGetEmployeeByIdQuery,
-useUpdateEmployeeMutation,
-useDeleteEmployeeMutation,
+  useAddEmployeeMutation,
+  useGetEmployeesQuery,
+  useLazyGetEmployeesQuery,
+  useGetEmployeeByIdQuery,
+  useUpdateEmployeeMutation,
+  useDeleteEmployeeMutation,
 } = employeeApi;
