@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { paginateQuery } from "../utils/paginatedQuery.js";
+import { parseBoolean, trimString } from "../utils/utils.js";
 
 export const addUser = async (req, res) => {
   try {
@@ -128,35 +129,73 @@ export const updateUser = async (req, res) => {
     const { id } = req.params;
     const updates = { ...req.body };
 
+    if (req.file) {
+      updates.profilePicture = req.file.path;
+    }
+
+    // If frontend sends the string "null" for profilePicture, remove it
+    if (updates.profilePicture === "null" || updates.profilePicture === "undefined") {
+      delete updates.profilePicture;
+    }
+
+    updates.firstName = trimString(updates.firstName);
+    updates.middleName = trimString(updates.middleName) || "";
+    updates.lastName = trimString(updates.lastName);
+
     if (updates.email) {
       updates.email = updates.email.toLowerCase().trim();
-      const isObjectId = mongoose.Types.ObjectId.isValid(id);
-      const idExclusion = isObjectId ? { _id: { $ne: id } } : { userId: { $ne: id } };
-      const existing = await User.findOne({
+
+      const existingUser = await User.findOne({
         email: updates.email,
-        ...idExclusion,
+        ...(mongoose.Types.ObjectId.isValid(id)
+          ? { _id: { $ne: id } }
+          : { userId: { $ne: id } }),
       });
-      if (existing) {
-        return res.status(400).json({ message: "Email already in use" });
+
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Email already in use",
+        });
       }
     }
 
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
+    if ("isActive" in updates) {
+      const parsedValue = parseBoolean(updates.isActive);
+
+      if (parsedValue === undefined) {
+        return res.status(400).json({
+          message: "isActive must be a boolean value",
+        });
+      }
+
+      updates.isActive = parsedValue;
     }
 
-    const isObjectId = mongoose.Types.ObjectId.isValid(id);
-    const updated = isObjectId
-      ? await User.findByIdAndUpdate(id, updates, { new: true }).select("-password")
-      : await User.findOneAndUpdate({ userId: id }, updates, { new: true }).select("-password");
-    if (!updated) {
-      return res.status(404).json({ message: "User not found" });
+    const filter = mongoose.Types.ObjectId.isValid(id)
+      ? { _id: id }
+      : { userId: id };
+
+    const updatedUser = await User.findOneAndUpdate(filter, updates, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-    return res.status(200).json({ success: true, user: updated });
-  } catch (err) {
-    console.error("Update User Error:", err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(200).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Update User Error:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };
 
@@ -165,9 +204,15 @@ export const deleteUser = async (req, res) => {
     const { id } = req.params;
 
     const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const updateOptions = { new: true, returnDocument: "after" };
+
     const user = isObjectId
-      ? await User.findByIdAndUpdate(id, { isActive: false }, { new: true })
-      : await User.findOneAndUpdate({ userId: id }, { isActive: false }, { new: true });
+      ? await User.findByIdAndUpdate(id, { isActive: false }, updateOptions)
+      : await User.findOneAndUpdate(
+          { userId: id },
+          { isActive: false },
+          updateOptions,
+        );
 
     if (!user) {
       return res.status(404).json({

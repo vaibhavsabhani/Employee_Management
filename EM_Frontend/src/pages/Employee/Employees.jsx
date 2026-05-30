@@ -11,7 +11,7 @@ import DataTable from "@/components/common/DataTable";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PICTURE_BASE_URL } from "@/constant/constant";
-import { DeleteIcon } from "@/utils/icons";
+import { DeleteIcon, EditIcon, ViewIcon } from "@/utils/icons";
 import Block from "@/components/custom/Block";
 import { toast } from "sonner";
 
@@ -134,15 +134,21 @@ const Employees = () => {
       key: "actions",
       render: (row) => (
         <Block className="flex items-center gap-2">
-          <button
+          <ViewIcon
             onClick={() => navigate(`/employees/${row._id}`)}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
-          >
-            View
-          </button>
+            width={18}
+            height={18}
+            className="text-indigo-600 hover:text-indigo-800 cursor-pointer"
+          />
+          <EditIcon
+            className="cursor-pointer"
+            width={18}
+            height={18}
+            onClick={() => navigate(`/employees/edit/${row._id}`)}
+          />
           <DeleteIcon
-            width={16}
-            height={16}
+            width={18}
+            height={18}
             onClick={handleDelete(row.userId)}
             className="cursor-pointer"
           />

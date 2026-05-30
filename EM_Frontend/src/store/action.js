@@ -3,7 +3,7 @@ import { useLoginMutation, useLogoutMutation } from "./Action/auth";
 import {
   useAddEmployeeMutation,
   useGetEmployeesQuery,
-  useGetEmployeeByIdQuery,
+  useGetEmployeeByIdMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
   useLazyGetEmployeesQuery,
@@ -14,7 +14,7 @@ export {
   useLogoutMutation,
   useAddEmployeeMutation,
   useGetEmployeesQuery,
-  useGetEmployeeByIdQuery,
+  useGetEmployeeByIdMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
   useLazyGetEmployeesQuery

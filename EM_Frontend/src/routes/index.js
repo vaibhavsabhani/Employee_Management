@@ -3,6 +3,7 @@ import Dashboard from "@/pages/Dashboard";
 import Employees from "@/pages/Employee/Employees";
 import Profile from "@/pages/Profile";
 import AddEmployee from "@/pages/Employee/AddEmployee/AddEmployee";
+import EditEmployee from "@/pages/Employee/EditEmployee/EditEmployee";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -27,8 +28,8 @@ const routes = [
   },
 
   {
-    path: "/employees/:id/edit",
-    component: AddEmployee,
+    path: "/employees/edit/:id",
+    component: EditEmployee,
     protected: true,
   },
 

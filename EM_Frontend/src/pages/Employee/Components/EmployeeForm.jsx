@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,8 +9,15 @@ import employeeSchema from "./EmployeeSchema";
 import { ROLES } from "@/constant/roles";
 import { RoleStatus } from "@/constant/constant";
 import { Button } from "@/components/ui/button";
+import { useGetEmployeeByIdMutation } from "@/store/action";
+import { useNavigate, useParams } from "react-router-dom";
+import { Loader } from "@/components/ui/loader";
 
 const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [getEmployeeById, { isLoading: isEmployeeLoading }] =
+    useGetEmployeeByIdMutation();
   const form = useForm({
     resolver: zodResolver(employeeSchema),
     defaultValues: {
@@ -20,21 +27,48 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
       email: "",
       phoneNumber: "",
       role: "employee",
-      isActive: "active",
+      isActive: false,
       profilePicture: null,
     },
   });
 
+  useEffect(() => {
+    if (isEdit) {
+      getEmployeeById(id).then((res) => {
+        console.log(res);
+        if (res?.data) {
+          const employeeData = res.data?.user;
+          console.log(employeeData);
+          form.reset({
+            firstName: employeeData.firstName,
+            middleName: employeeData.middleName,
+            lastName: employeeData.lastName,
+            email: employeeData.email,
+            phoneNumber: employeeData.phoneNumber,
+            role: employeeData.role,
+            isActive: employeeData.isActive ? "active" : "inactive",
+            profilePicture: null, // File inputs cannot be set programmatically
+          });
+        }
+      });
+    }
+  }, [id]);
+
   const onSubmit = (data) => {
+    data.isActive = data.isActive === "active" ? true : false;
     handleSubmit(data);
   };
 
+  if (isEmployeeLoading && isEdit) {
+    return <Loader />;
+  }
+
   return (
     <Layout>
-      <div className="p-6 bg-muted/20 min-h-screen">
+      <div className="bg-muted/20">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="max-w-6xl mx-auto space-y-6"
+          className=" mx-auto space-y-6"
         >
           {/* Header */}
 
@@ -47,12 +81,21 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
               </p>
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" type="button" className="py-6" disabled={isLoading}>
+            <div className="sm:flex hidden gap-3">
+              <Button
+                variant="outline"
+                type="button"
+                disabled={isLoading}
+                onClick={() => navigate("/employees")}
+              >
                 Cancel
               </Button>
 
-              <Button type="submit" className="py-6 cursor-pointer" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="cursor-pointer"
+                disabled={isLoading}
+              >
                 Save Changes
               </Button>
             </div>
@@ -161,6 +204,25 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
                 bottomText="Drag and drop PDF, JPG, or PNG files (Max 10MB)"
               />
             </div>
+          </div>
+
+          <div className="sm:hidden flex justify-center gap-3">
+            <Button
+              variant="outline"
+              type="button"
+              disabled={isLoading}
+              onClick={() => navigate("/employees")}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              className="cursor-pointer"
+              disabled={isLoading}
+            >
+              Save Changes
+            </Button>
           </div>
         </form>
       </div>

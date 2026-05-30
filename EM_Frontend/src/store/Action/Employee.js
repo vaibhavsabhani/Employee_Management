@@ -74,12 +74,27 @@ export const employeeApi = createApi({
       },
     }),
 
-    getEmployeeById: builder.query({
+    getEmployeeById: builder.mutation({
       query: (id) => ({
         url: `/employee/${id}`,
         method: "GET",
       }),
       providesTags: ["Employee"],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setEmployeeLoading());
+
+        try {
+          const response = await queryFulfilled;
+          dispatch(
+            setEmployee({
+              singleEmployee: response?.data || [],
+            }),
+          );
+        } catch (e) {
+          console.log(">>>>>setEmployee error", e);
+          dispatch(setEmployeeError(e?.message || "Failed to load employee"));
+        }
+      },
     }),
 
     updateEmployee: builder.mutation({
@@ -105,7 +120,7 @@ export const {
   useAddEmployeeMutation,
   useGetEmployeesQuery,
   useLazyGetEmployeesQuery,
-  useGetEmployeeByIdQuery,
+  useGetEmployeeByIdMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
 } = employeeApi;

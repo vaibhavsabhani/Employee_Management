@@ -18,7 +18,7 @@ const upload = multer({
 router.post("/add", protect, upload.single("profilePicture"), addUser);
 router.get("/", protect, getUsers);
 router.get("/:id", protect, getUserById);
-router.put("/:id", protect, updateUser);
+router.put("/:id", protect, upload.single("profilePicture"), updateUser);
 router.delete("/:id", protect, deleteUser);
 
 export default router;
