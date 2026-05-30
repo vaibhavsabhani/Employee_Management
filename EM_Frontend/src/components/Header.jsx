@@ -4,9 +4,13 @@ import { Search, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Block from "./custom/Block";
+import { PICTURE_BASE_URL } from "@/constant/constant";
 
 const Header = () => {
   const navigate = useNavigate();
+  const user = localStorage.getItem("user");
+  const data = user ? JSON.parse(user) : null;
+  const url = `${PICTURE_BASE_URL}${data.profilePicture}`;
   return (
     <>
       <header className="h-16  gap-3 flex items-center justify-between px-6 border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-md bg-white/95">
@@ -20,7 +24,10 @@ const Header = () => {
         </Block>
 
         <Block className="flex items-center gap-4">
-          <Button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative" variant="icon">
+          <Button
+            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative"
+            variant="icon"
+          >
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 h-2 w-2 bg-indigo-600 rounded-full ring-2 ring-white" />
           </Button>
@@ -34,15 +41,15 @@ const Header = () => {
           >
             <Block className="text-right hidden sm:block">
               <Block className="text-xs font-semibold text-slate-800 leading-tight group-hover:text-indigo-600">
-                Elena Rodriguez
+                {data.firstName} {data.lastName}
               </Block>
               <Block className="text-[10px] text-slate-400 font-medium">
-                VP of Design
+                {data.email}
               </Block>
             </Block>
             <Avatar className="h-9 w-9 border border-indigo-100 shadow-sm">
               <AvatarImage
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                src={url}
                 alt="Elena Rodriguez"
               />
               <AvatarFallback className="bg-indigo-600 text-white text-xs font-bold">
