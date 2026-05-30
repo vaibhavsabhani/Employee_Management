@@ -5,6 +5,7 @@ export const paginateQuery = async ({
   select = "",
   populate = "",
   defaultSort = { createdAt: -1 },
+  filter: baseFilter = {},
 }) => {
   const pageQuery = Number(query.page) || 1;
   const limit = Math.max(1, Number(query.limit) || 10);
@@ -21,7 +22,7 @@ export const paginateQuery = async ({
   const sortBy = query.sortBy || Object.keys(defaultSort)[0];
   const sortOrder = query.sortOrder === "asc" ? 1 : -1;
 
-  const filter = {};
+  const filter = { ...baseFilter };
 
   // Search
   if (search && searchFields.length) {

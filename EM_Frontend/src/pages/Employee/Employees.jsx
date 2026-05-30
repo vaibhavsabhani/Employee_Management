@@ -1,17 +1,26 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import usePaginatedQuery from "@/hooks/usePagination";
-import { useLazyGetEmployeesQuery } from "@/store/action";
+import {
+  useDeleteEmployeeMutation,
+  useLazyGetEmployeesQuery,
+} from "@/store/action";
 import { Download, Plus } from "lucide-react";
 import React, { useCallback } from "react";
 import DataTable from "@/components/common/DataTable";
 import { useNavigate } from "react-router-dom";
-import { Avatar } from "@base-ui/react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { PICTURE_BASE_URL } from "@/constant/constant";
+import { DeleteIcon } from "@/utils/icons";
+import Block from "@/components/custom/Block";
+import { toast } from "sonner";
 
 const Employees = () => {
   const navigate = useNavigate();
 
   const [getEmployee, { isFetching }] = useLazyGetEmployeesQuery();
+  const [deleteEmployee, { isLoading: deleteEmployeeLoader }] =
+    useDeleteEmployeeMutation();
 
   const fetchData = useCallback(
     ({ page, limit, ...filters }) => {
@@ -53,17 +62,46 @@ const Employees = () => {
     transformResponse,
   });
 
+  const handleDelete = (userId) => () => {
+    console.log("Delete user with ID:", userId);
+    deleteEmployee(userId).then((res) => {
+      if (res?.error) {
+        toast.error(res?.error?.data?.message || "Failed to delete employee");
+      } else {
+        toast.success("Employee deleted successfully");
+        refetch();
+      }
+    });
+  };
+
   const employeeColumns = [
     {
       header: "Name",
       key: "name",
-      render: (row) => (
-        <div className="flex items-center gap-2">
-          <span>
-            {row.firstName} {row.lastName}
-          </span>
-        </div>
-      ),
+      render: (row) => {
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar className="w-10 h-10" size="sm">
+              {(() => {
+                const pic = row.profilePicture || "";
+                const src = pic
+                  ? `${PICTURE_BASE_URL.replace(/\/$/, "")}/${pic.replace(/^\//, "")}`
+                  : null;
+                return src ? (
+                  <AvatarImage src={src} alt="Profile" />
+                ) : (
+                  <AvatarFallback>
+                    {(row.firstName || row.email || "U")[0]?.toUpperCase()}
+                  </AvatarFallback>
+                );
+              })()}
+            </Avatar>
+            <span>
+              {row.firstName} {row.lastName}
+            </span>
+          </div>
+        );
+      },
     },
 
     {
@@ -95,12 +133,20 @@ const Employees = () => {
       header: "Actions",
       key: "actions",
       render: (row) => (
-        <button
-          onClick={() => navigate(`/employees/${row._id}`)}
-          className="text-sm text-indigo-600 hover:text-indigo-800"
-        >
-          View
-        </button>
+        <Block className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/employees/${row._id}`)}
+            className="text-sm text-indigo-600 hover:text-indigo-800"
+          >
+            View
+          </button>
+          <DeleteIcon
+            width={16}
+            height={16}
+            onClick={handleDelete(row.userId)}
+            className="cursor-pointer"
+          />
+        </Block>
       ),
     },
   ];
@@ -136,7 +182,7 @@ const Employees = () => {
         <DataTable
           columns={employeeColumns}
           data={data}
-          loading={loading || isFetching}
+          loading={deleteEmployeeLoader || isFetching}
           page={page}
           limit={limit}
           total={total}

@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import { paginateQuery } from "../utils/paginatedQuery.js";
 
 export const addUser = async (req, res) => {
@@ -81,6 +82,7 @@ export const getUsers = async (req, res) => {
   try {
     const result = await paginateQuery({
       model: User,
+      filter: { isActive: true },
       query: req.query,
       searchFields: ["firstName", "middleName", "lastName", "email"],
       select: "-password",
@@ -107,7 +109,10 @@ export const getUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id).select("-password");
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const user = isObjectId
+      ? await User.findById(id).select("-password")
+      : await User.findOne({ userId: id }).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -125,9 +130,11 @@ export const updateUser = async (req, res) => {
 
     if (updates.email) {
       updates.email = updates.email.toLowerCase().trim();
+      const isObjectId = mongoose.Types.ObjectId.isValid(id);
+      const idExclusion = isObjectId ? { _id: { $ne: id } } : { userId: { $ne: id } };
       const existing = await User.findOne({
         email: updates.email,
-        _id: { $ne: id },
+        ...idExclusion,
       });
       if (existing) {
         return res.status(400).json({ message: "Email already in use" });
@@ -138,9 +145,10 @@ export const updateUser = async (req, res) => {
       updates.password = await bcrypt.hash(updates.password, 10);
     }
 
-    const updated = await User.findByIdAndUpdate(id, updates, {
-      new: true,
-    }).select("-password");
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const updated = isObjectId
+      ? await User.findByIdAndUpdate(id, updates, { new: true }).select("-password")
+      : await User.findOneAndUpdate({ userId: id }, updates, { new: true }).select("-password");
     if (!updated) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -155,13 +163,27 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await User.findByIdAndDelete(id);
-    if (!deleted) {
-      return res.status(404).json({ message: "User not found" });
+
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const user = isObjectId
+      ? await User.findByIdAndUpdate(id, { isActive: false }, { new: true })
+      : await User.findOneAndUpdate({ userId: id }, { isActive: false }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
-    return res.status(200).json({ success: true, message: "User deleted" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Employee deactivated successfully",
+    });
   } catch (err) {
-    console.error("Delete User Error:", err);
-    return res.status(500).json({ message: "Server error" });
+    console.error("Deactivate User Error:", err);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };
