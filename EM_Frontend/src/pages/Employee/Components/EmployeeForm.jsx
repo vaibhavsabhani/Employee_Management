@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useGetEmployeeByIdMutation } from "@/store/action";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader } from "@/components/ui/loader";
+import { ROUTES } from "@/components/sidebar.route";
 
 const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
   const { id } = useParams();
@@ -86,7 +87,7 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
                 variant="outline"
                 type="button"
                 disabled={isLoading}
-                onClick={() => navigate("/employees")}
+                onClick={() => navigate(ROUTES.EMPLOYEES)}
               >
                 Cancel
               </Button>
@@ -211,7 +212,7 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
               variant="outline"
               type="button"
               disabled={isLoading}
-              onClick={() => navigate("/employees")}
+              onClick={() => navigate(ROUTES.EMPLOYEES)}
             >
               Cancel
             </Button>

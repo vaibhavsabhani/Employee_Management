@@ -209,10 +209,10 @@ export const deleteUser = async (req, res) => {
     const user = isObjectId
       ? await User.findByIdAndUpdate(id, { isActive: false }, updateOptions)
       : await User.findOneAndUpdate(
-          { userId: id },
-          { isActive: false },
-          updateOptions,
-        );
+        { userId: id },
+        { isActive: false },
+        updateOptions,
+      );
 
     if (!user) {
       return res.status(404).json({
@@ -232,3 +232,22 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
+
+export const getUserData = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    console.error("Get User By ID Error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+
+}

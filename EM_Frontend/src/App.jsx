@@ -3,22 +3,13 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import routes from "./routes";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
+import RoleGuard from "./components/common/RoleGuard";
 
 function App() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
         {routes.map((route) => {
-          if (route.redirect) {
-            return (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={<Navigate to={route.redirect} replace />}
-              />
-            );
-          }
-
           const Component = route.component;
 
           return (
@@ -28,7 +19,9 @@ function App() {
               element={
                 route.protected ? (
                   <ProtectedRoute>
-                    <Component />
+                    <RoleGuard allowedRoles={route.allowedRoles}>
+                      <Component />
+                    </RoleGuard>
                   </ProtectedRoute>
                 ) : (
                   <Component />

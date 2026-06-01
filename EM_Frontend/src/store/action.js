@@ -9,6 +9,10 @@ import {
   useLazyGetEmployeesQuery,
 } from "./Action/Employee";
 
+import {
+  useGetUserDataMutation
+} from "./Action/User"
+
 export {
   useLoginMutation,
   useLogoutMutation,
@@ -17,5 +21,6 @@ export {
   useGetEmployeeByIdMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
-  useLazyGetEmployeesQuery
+  useLazyGetEmployeesQuery,
+  useGetUserDataMutation
 };

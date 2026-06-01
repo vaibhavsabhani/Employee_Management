@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Block from "./custom/Block";
 import { PICTURE_BASE_URL } from "@/constant/constant";
+import { useSelector } from "react-redux";
 
 const Header = () => {
   const navigate = useNavigate();
-  const user = localStorage.getItem("user");
-  const data = user ? JSON.parse(user) : null;
-  const url = `${PICTURE_BASE_URL}${data.profilePicture}`;
+  const userData = useSelector((state) => state.user.userData);
+  const url = `${PICTURE_BASE_URL}${userData?.profilePicture}`;
   return (
     <>
       <header className="h-16  gap-3 flex items-center justify-between px-6 border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-md bg-white/95">
@@ -41,10 +41,10 @@ const Header = () => {
           >
             <Block className="text-right hidden sm:block">
               <Block className="text-xs font-semibold text-slate-800 leading-tight group-hover:text-indigo-600">
-                {data.firstName} {data.lastName}
+                {userData?.firstName} {userData?.lastName}
               </Block>
               <Block className="text-[10px] text-slate-400 font-medium">
-                {data.email}
+                {userData?.email}
               </Block>
             </Block>
             <Avatar className="h-9 w-9 border border-indigo-100 shadow-sm">

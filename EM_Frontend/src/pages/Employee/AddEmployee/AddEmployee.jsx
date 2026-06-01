@@ -3,6 +3,7 @@ import EmployeeForm from "../Components/EmployeeForm";
 import { useAddEmployeeMutation } from "@/store/action";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/components/sidebar.route";
 
 const AddEmployee = () => {
   const [addEmployee, { isLoading }] = useAddEmployeeMutation();
@@ -19,7 +20,7 @@ const AddEmployee = () => {
         toast.error(res?.error?.data?.message || "Failed to add employee.");
       } else {
         toast.success("Employee added successfully!");
-        navigate("/employees");
+        navigate(ROUTES.EMPLOYEES);
       }
     });
   };

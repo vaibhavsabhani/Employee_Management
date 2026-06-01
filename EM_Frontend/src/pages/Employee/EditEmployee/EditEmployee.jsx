@@ -3,6 +3,7 @@ import EmployeeForm from "../Components/EmployeeForm";
 import { useUpdateEmployeeMutation } from "@/store/action";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
+import { ROUTES } from "@/components/sidebar.route";
 
 const EditEmployee = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const EditEmployee = () => {
           );
         } else {
           toast.success("Employee updated successfully!");
-          navigate("/employees");
+          navigate(ROUTES.EMPLOYEES);
         }
       });
     }

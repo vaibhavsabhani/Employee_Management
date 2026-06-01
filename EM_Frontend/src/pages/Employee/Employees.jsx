@@ -8,12 +8,13 @@ import {
 import { Download, Plus } from "lucide-react";
 import React, { useCallback } from "react";
 import DataTable from "@/components/common/DataTable";
-import { useNavigate } from "react-router-dom";
+import { Routes, useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { PICTURE_BASE_URL } from "@/constant/constant";
 import { DeleteIcon, EditIcon, ViewIcon } from "@/utils/icons";
 import Block from "@/components/custom/Block";
 import { toast } from "sonner";
+import { ROUTES } from "@/components/sidebar.route";
 
 const Employees = () => {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ const Employees = () => {
               {(() => {
                 const pic = row.profilePicture || "";
                 const src = pic
-                  ? `${PICTURE_BASE_URL.replace(/\/$/, "")}/${pic.replace(/^\//, "")}`
+                  ? `${PICTURE_BASE_URL?.replace(/\/$/, "")}/${pic?.replace(/^\//, "")}`
                   : null;
                 return src ? (
                   <AvatarImage src={src} alt="Profile" />
@@ -135,7 +136,7 @@ const Employees = () => {
       render: (row) => (
         <Block className="flex items-center gap-2">
           <ViewIcon
-            onClick={() => navigate(`/employees/${row._id}`)}
+            onClick={() => navigate(ROUTES.EMPLOYEE_PROFILE)}
             width={18}
             height={18}
             className="text-indigo-600 hover:text-indigo-800 cursor-pointer"
@@ -144,7 +145,7 @@ const Employees = () => {
             className="cursor-pointer"
             width={18}
             height={18}
-            onClick={() => navigate(`/employees/edit/${row._id}`)}
+            onClick={() => navigate(Routes.EMPLOYEE_EDIT)}
           />
           <DeleteIcon
             width={18}
@@ -176,7 +177,7 @@ const Employees = () => {
             <span>Export</span>
           </Button>
           <Button
-            onClick={() => navigate("/employees/new")}
+            onClick={() => navigate(ROUTES.ADD_EMPLOYEE)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-150 flex items-center gap-2"
           >
             <Plus className="h-4.5 w-4.5" />

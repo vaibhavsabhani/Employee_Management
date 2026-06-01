@@ -4,39 +4,71 @@ import Employees from "@/pages/Employee/Employees";
 import Profile from "@/pages/Profile";
 import AddEmployee from "@/pages/Employee/AddEmployee/AddEmployee";
 import EditEmployee from "@/pages/Employee/EditEmployee/EditEmployee";
+import { ROUTES } from "@/components/sidebar.route";
+import TimeTracking from "@/pages/TimeTracking/TimeTracking";
+import { ROLES } from "@/constant/roles";
+import Unauthorized from "@/pages/Unauthorized/Unauthorized";
 
 const routes = [
-  { path: "/", redirect: "/login" },
-  { path: "/login", component: Login },
-
   {
-    path: "/dashboard",
+    path: "/",
+    redirect: ROUTES.DASHBOARD,
     component: Dashboard,
     protected: true,
+    allowedRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
+  },
+  {
+    path: ROUTES.LOGIN,
+    component: Login,
+    allowedRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
   },
 
   {
-    path: "/employees",
+    path: ROUTES.DASHBOARD,
+    component: Dashboard,
+    protected: true,
+    allowedRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
+  },
+
+  {
+    path: ROUTES.EMPLOYEES,
     component: Employees,
     protected: true,
+    allowedRoles: [ROLES.ADMIN],
   },
 
   {
-    path: "/employees/:id",
+    path: ROUTES.EMPLOYEE_PROFILE,
     component: Profile,
     protected: true,
+    allowedRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
   },
 
   {
-    path: "/employees/edit/:id",
+    path: ROUTES.EMPLOYEE_EDIT,
     component: EditEmployee,
     protected: true,
+    allowedRoles: [ROLES.ADMIN],
   },
 
   {
-    path: "/employees/new",
+    path: ROUTES.EMPLOYEE_ADD,
     component: AddEmployee,
     protected: true,
+    allowedRoles: [ROLES.ADMIN],
+  },
+
+  {
+    path: ROUTES.TIME_TRACKING,
+    component: TimeTracking,
+    protected: true,
+    allowedRoles: [ROLES.EMPLOYEE],
+  },
+
+  {
+    path: ROUTES.UNAUTHORIZED,
+    component: Unauthorized,
+    allowedRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
   },
 ];
 

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLoginMutation } from "@/store/action";
+import { ROUTES } from "@/components/sidebar.route";
 
 const schema = z.object({
   email: z.string().email({ message: "Enter a valid email" }),
@@ -28,7 +29,8 @@ export default function Login() {
       const response = await login(data).unwrap();
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
-      navigate("/dashboard");
+      localStorage.setItem("role", response.user.role);
+      navigate(ROUTES.DASHBOARD);
     } catch (error) {
       console.log("Login Error:", error);
       alert(error?.data?.message || "Something went wrong");
