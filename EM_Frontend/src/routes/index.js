@@ -6,6 +6,7 @@ import AddEmployee from "@/pages/Employee/AddEmployee/AddEmployee";
 import EditEmployee from "@/pages/Employee/EditEmployee/EditEmployee";
 import { ROUTES } from "@/components/sidebar.route";
 import TimeTracking from "@/pages/TimeTracking/TimeTracking";
+import NewEntry from "@/pages/TimeTracking/NewEntry";
 import { ROLES } from "@/constant/roles";
 import Unauthorized from "@/pages/Unauthorized/Unauthorized";
 
@@ -61,6 +62,13 @@ const routes = [
   {
     path: ROUTES.TIME_TRACKING,
     component: TimeTracking,
+    protected: true,
+    allowedRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
+  },
+
+  {
+    path: ROUTES.TIME_TRACKING_NEW,
+    component: NewEntry,
     protected: true,
     allowedRoles: [ROLES.EMPLOYEE],
   },

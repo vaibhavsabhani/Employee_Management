@@ -13,6 +13,14 @@ import {
   useGetUserDataMutation
 } from "./Action/User"
 
+import {
+  useAddTimeEntryMutation,
+  useGetMyTimeEntriesQuery,
+  useGetAllTimeEntriesQuery,
+  useApproveTimeEntryMutation,
+  useRejectTimeEntryMutation,
+} from "./Action/TimeTracking";
+
 export {
   useLoginMutation,
   useLogoutMutation,
@@ -22,5 +30,10 @@ export {
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
   useLazyGetEmployeesQuery,
-  useGetUserDataMutation
+  useGetUserDataMutation,
+  useAddTimeEntryMutation,
+  useGetMyTimeEntriesQuery,
+  useGetAllTimeEntriesQuery,
+  useApproveTimeEntryMutation,
+  useRejectTimeEntryMutation,
 };

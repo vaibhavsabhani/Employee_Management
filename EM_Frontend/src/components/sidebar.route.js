@@ -4,6 +4,7 @@ import {
   FileText,
   Settings,
   LifeBuoy,
+  Clock,
 } from "lucide-react";
 import { ROLES } from "@/constant/roles";
 
@@ -17,6 +18,7 @@ export const ROUTES = {
   REPORTS: "/reports",
   SETTINGS: "/settings",
   TIME_TRACKING: "/time-tracking",
+  TIME_TRACKING_NEW: "/time-tracking/new",
   UNAUTHORIZED: "/unauthorized",
 };
 
@@ -25,7 +27,7 @@ export const sidebarItems = [
   { label: "Employees", path: ROUTES.EMPLOYEES, icon: Users, roles: [ROLES.ADMIN] },
   { label: "Reports", path: ROUTES.REPORTS, icon: FileText, disabled: true, roles: [ROLES.ADMIN] },
   { label: "Settings", path: ROUTES.SETTINGS, icon: Settings, disabled: true, roles: [ROLES.ADMIN] },
-  { label: "Time Tracking", path: ROUTES.TIME_TRACKING, icon: Settings, roles: [ROLES.EMPLOYEE] }
+  { label: "Time Tracking", path: ROUTES.TIME_TRACKING, icon: Clock, roles: [ROLES.ADMIN, ROLES.EMPLOYEE] }
 ];
 
 export const bottomSidebarItems = [
