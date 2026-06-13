@@ -3,6 +3,8 @@ import User from "../models/user.js";
 
 export const protect = async (req, res, next) => {
   try {
+    // Allow preflight requests to pass through without authentication
+    if (req.method === "OPTIONS") return next();
     let token;
 
     // Check authorization header
@@ -55,6 +57,8 @@ export const protect = async (req, res, next) => {
 
 export const DecodeJwtToken = (req, res, next) => {
   try {
+    // Allow preflight requests to pass through without authentication
+    if (req.method === "OPTIONS") return next();
     let token;
 
     if (

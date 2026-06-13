@@ -11,7 +11,15 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// Enable CORS, allow origin via FRONTEND_URL or default to all origins
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // Serve uploaded files (profile pictures) from the uploads directory
