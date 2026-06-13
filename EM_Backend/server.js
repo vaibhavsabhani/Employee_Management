@@ -51,7 +51,7 @@ app.get("/api/test-mongo", async (req, res) => {
 
     return res.json({
       readyState: state,
-      mongoUriExists: !!process.env.MONGO_URI,
+      mongoUriExists: !!process.env.MONGO_URL,
     });
   } catch (err) {
     return res.json(err);
