@@ -15,10 +15,10 @@ app.use(cors());
 app.use(express.json());
 
 // Serve uploaded files (profile pictures) from the uploads directory
-app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
+// app.use(
+//   "/uploads",
+//   express.static(path.join(process.cwd(), "uploads"))
+// );
 
 console.log("MONGO_URL:", process.env.MONGO_URL);
 
