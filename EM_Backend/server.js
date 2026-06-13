@@ -44,3 +44,16 @@ app.get("/test-env", (req, res) => {
     PORT:process.env.PORT
   });
 });
+
+app.get("/api/test-mongo", async (req, res) => {
+  try {
+    const state = mongoose.connection.readyState;
+
+    return res.json({
+      readyState: state,
+      mongoUriExists: !!process.env.MONGO_URI,
+    });
+  } catch (err) {
+    return res.json(err);
+  }
+});
