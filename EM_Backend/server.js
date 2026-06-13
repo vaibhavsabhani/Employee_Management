@@ -12,10 +12,10 @@ app.use(cors());
 app.use(express.json());
 
 
-console.log("MONGO_URI:", process.env.MONGO_URI);
+console.log("MONGO_URL:", process.env.MONGO_URL);
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URL)
   .then(() => {
     console.log("MongoDB Connected");
   })
@@ -38,7 +38,7 @@ app.listen(PORT, () => {
 
 app.get("/test-env", (req, res) => {
   res.json({
-    mongoExists: !!process.env.MONGO_URI,
-    mongoUriLength: process.env.MONGO_URI?.length || 0,
+    mongoExists: !!process.env.MONGO_URL,
+    mongoUriLength: process.env.MONGO_URL?.length || 0,
   });
 });
