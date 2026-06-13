@@ -1,42 +1,38 @@
-import React, { Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import routes from './routes'
-import ProtectedRoute from './components/ProtectedRoute'
-import './App.css'
+import React, { Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import routes from "./routes";
+import ProtectedRoute from "./components/ProtectedRoute";
+import "./App.css";
+import RoleGuard from "./components/common/RoleGuard";
 
 function App() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
-        {routes.map((r) => {
-          if (r.redirect) {
-            return <Route key={r.path} path={r.path} element={<Navigate to={r.redirect} replace />} />
-          }
-
-          const LazyComp = React.lazy(() => import(`./pages/${r.component}.jsx`))
+        {routes.map((route) => {
+          const Component = route.component;
 
           return (
             <Route
-              key={r.path}
-              path={r.path}
+              key={route.path}
+              path={route.path}
               element={
-                r.protected ? (
+                route.protected ? (
                   <ProtectedRoute>
-                    <LazyComp />
+                    <RoleGuard allowedRoles={route.allowedRoles}>
+                      <Component />
+                    </RoleGuard>
                   </ProtectedRoute>
                 ) : (
-                  <LazyComp />
+                  <Component />
                 )
               }
             />
-          )
+          );
         })}
-
-        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Suspense>
-  )
+  );
 }
 
-export default App
- 
+export default App;

@@ -19,6 +19,7 @@ import {
   Briefcase,
   FileText
 } from 'lucide-react'
+import { ROUTES } from '@/components/sidebar.route'
 
 export default function Profile() {
   const { id } = useParams()
@@ -33,7 +34,7 @@ export default function Profile() {
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <h2 className="text-xl font-bold text-slate-800">Employee Not Found</h2>
           <p className="text-slate-400 mt-2">The employee you are trying to view does not exist in the database.</p>
-          <Button onClick={() => navigate('/employees')} className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white">
+          <Button onClick={() => navigate(ROUTES.EMPLOYEES)} className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white">
             Back to Directory
           </Button>
         </div>
@@ -57,13 +58,13 @@ export default function Profile() {
         {/* Navigation / Breadcrumb */}
         <div className="flex items-center gap-3">
           <Link 
-            to="/employees" 
+            to={ROUTES.EMPLOYEES}
             className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="h-4.5 w-4.5" />
           </Link>
           <div className="text-xs font-semibold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
-            <Link to="/employees" className="hover:text-indigo-600 transition-colors">Employees</Link>
+            <Link to={ROUTES.EMPLOYEES} className="hover:text-indigo-600 transition-colors">Employees</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="text-slate-600 font-bold">{employee.fullName}</span>
           </div>
