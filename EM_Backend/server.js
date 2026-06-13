@@ -40,5 +40,7 @@ app.get("/test-env", (req, res) => {
   res.json({
     mongoExists: !!process.env.MONGO_URL,
     mongoUriLength: process.env.MONGO_URL?.length || 0,
+    JWT_SECRET : process.env.JWT_SECRET,
+    PORT:process.env.PORT
   });
 });
