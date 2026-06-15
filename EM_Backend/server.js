@@ -20,10 +20,10 @@ app.use(
   express.static(path.join(process.cwd(), "uploads"))
 );
 
-console.log("MONGO_URI:", process.env.MONGO_URI);
+console.log("MONGO_URL:", process.env.MONGO_URL);
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URL)
   .then(() => {
     console.log("MongoDB Connected");
   })

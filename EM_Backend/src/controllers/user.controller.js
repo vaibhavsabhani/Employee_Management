@@ -7,9 +7,7 @@ import { parseBoolean, trimString } from "../utils/utils.js";
 export const addUser = async (req, res) => {
   try {
     console.log("req.body:", req.body);
-    console.log("req.file:", req.file);
     const { firstName, middleName, lastName, email, phoneNumber } = req.body;
-    const profilePicture = req.file?.path || "";
 
     // Validation
     if (!firstName?.trim()) {
@@ -56,7 +54,6 @@ export const addUser = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       phoneNumber,
-      profilePicture,
       role: "employee",
       createdBy: req.user?._id || null,
     });
@@ -64,6 +61,8 @@ export const addUser = async (req, res) => {
     // Remove password from response
     const employeeResponse = employee.toObject();
     delete employeeResponse.password;
+    // remove profilePicture from API response
+    delete employeeResponse.profilePicture;
 
     return res.status(201).json({
       success: true,
@@ -89,13 +88,20 @@ export const getUsers = async (req, res) => {
       select: "-password",
     });
 
+    // remove profilePicture from each user before returning
+    const users = (result.data || []).map((u) => {
+      const obj = u.toObject ? u.toObject() : u;
+      delete obj.profilePicture;
+      return obj;
+    });
+
     return res.status(200).json({
       success: true,
       page: result.page,
       limit: result.limit,
       total: result.total,
       totalPages: result.totalPages,
-      users: result.data,
+      users,
     });
   } catch (error) {
     console.error("Get Users Error:", error);
@@ -117,7 +123,9 @@ export const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json({ success: true, user });
+    const userResponse = user.toObject ? user.toObject() : user;
+    delete userResponse.profilePicture;
+    return res.status(200).json({ success: true, user: userResponse });
   } catch (err) {
     console.error("Get User By ID Error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -128,15 +136,8 @@ export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { ...req.body };
-
-    if (req.file) {
-      updates.profilePicture = req.file.path;
-    }
-
-    // If frontend sends the string "null" for profilePicture, remove it
-    if (updates.profilePicture === "null" || updates.profilePicture === "undefined") {
-      delete updates.profilePicture;
-    }
+    // Ignore any profilePicture provided by clients
+    if ("profilePicture" in updates) delete updates.profilePicture;
 
     updates.firstName = trimString(updates.firstName);
     updates.middleName = trimString(updates.middleName) || "";
@@ -186,9 +187,14 @@ export const updateUser = async (req, res) => {
       });
     }
 
+    const userResponse = updatedUser.toObject
+      ? updatedUser.toObject()
+      : updatedUser;
+    delete userResponse.profilePicture;
+
     return res.status(200).json({
       success: true,
-      user: updatedUser,
+      user: userResponse,
     });
   } catch (error) {
     console.error("Update User Error:", error);
@@ -209,10 +215,10 @@ export const deleteUser = async (req, res) => {
     const user = isObjectId
       ? await User.findByIdAndUpdate(id, { isActive: false }, updateOptions)
       : await User.findOneAndUpdate(
-        { userId: id },
-        { isActive: false },
-        updateOptions,
-      );
+          { userId: id },
+          { isActive: false },
+          updateOptions,
+        );
 
     if (!user) {
       return res.status(404).json({
@@ -241,13 +247,14 @@ export const getUserData = async (req, res) => {
         message: "User not found",
       });
     }
+    const userResponse = user.toObject ? user.toObject() : user;
+    delete userResponse.profilePicture;
     return res.status(200).json({
       success: true,
-      user,
+      user: userResponse,
     });
   } catch (err) {
     console.error("Get User By ID Error:", err);
     return res.status(500).json({ message: "Server error" });
   }
-
-}
+};

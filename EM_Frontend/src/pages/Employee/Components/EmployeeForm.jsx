@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputField from "@/components/custom/InputField";
 import SelectField from "@/components/custom/SelectField";
-import UploadInput from "@/components/custom/UploadInputField";
 import employeeSchema from "./EmployeeSchema";
 import { ROLES } from "@/constant/roles";
 import { RoleStatus } from "@/constant/constant";
@@ -29,7 +28,6 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
       phoneNumber: "",
       role: "employee",
       isActive: false,
-      profilePicture: null,
     },
   });
 
@@ -48,7 +46,6 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
             phoneNumber: employeeData.phoneNumber,
             role: employeeData.role,
             isActive: employeeData.isActive ? "active" : "inactive",
-            profilePicture: null, // File inputs cannot be set programmatically
           });
         }
       });
@@ -196,14 +193,10 @@ const EmployeeForm = ({ handleSubmit, isEdit, isLoading }) => {
 
               <span className="text-xs text-muted-foreground">STEP 3 OF 3</span>
             </div>
-
             <div className="p-5">
-              <UploadInput
-                control={form.control}
-                name="profilePicture"
-                label="Upload Profile Picture"
-                bottomText="Drag and drop PDF, JPG, or PNG files (Max 10MB)"
-              />
+              <p className="text-sm text-slate-500">
+                Profile pictures are no longer collected.
+              </p>
             </div>
           </div>
 
