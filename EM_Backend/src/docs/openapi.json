@@ -16,9 +16,22 @@
       "get": {
         "summary": "Get paginated employees",
         "parameters": [
-          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 }, "description": "Zero-based offset for results" },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 },
+            "description": "Zero-based offset for results"
+          },
           { "name": "search", "in": "query", "schema": { "type": "string" } }
         ],
         "responses": {
@@ -45,8 +58,7 @@
                   "middleName": { "type": "string" },
                   "lastName": { "type": "string" },
                   "email": { "type": "string", "format": "email" },
-                  "phoneNumber": { "type": "string" },
-                  "profilePicture": { "type": "string", "format": "binary" }
+                  "phoneNumber": { "type": "string" }
                 },
                 "required": ["firstName", "lastName", "email"]
               }
@@ -62,22 +74,56 @@
     "/employee/{id}": {
       "get": {
         "summary": "Get user by id",
-        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
-        "responses": { "200": { "description": "User data", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserResponse" } } } } },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserResponse" }
+              }
+            }
+          }
+        },
         "security": [{ "bearerAuth": [] }]
       },
       "put": {
         "summary": "Update user by id",
-        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserUpdate" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserUpdate" }
+            }
+          }
         },
         "responses": { "200": { "description": "Updated user" } },
         "security": [{ "bearerAuth": [] }]
       },
       "delete": {
         "summary": "Delete user by id",
-        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": { "200": { "description": "Deleted" } },
         "security": [{ "bearerAuth": [] }]
       }
@@ -93,7 +139,14 @@
           }
         },
         "responses": {
-          "200": { "description": "Auth response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } }
+          "200": {
+            "description": "Auth response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          }
         }
       }
     },
@@ -106,7 +159,11 @@
   },
   "components": {
     "securitySchemes": {
-      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     },
     "schemas": {
       "User": {
@@ -119,7 +176,7 @@
           "lastName": { "type": "string" },
           "email": { "type": "string", "format": "email" },
           "phoneNumber": { "type": "string" },
-          "profilePicture": { "type": "string" },
+
           "role": { "type": "string" },
           "isActive": { "type": "boolean" }
         }
@@ -166,7 +223,10 @@
           "limit": { "type": "integer" },
           "total": { "type": "integer" },
           "totalPages": { "type": "integer" },
-          "data": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/User" }
+          }
         }
       }
     }

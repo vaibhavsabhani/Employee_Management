@@ -10,7 +10,6 @@ import { useSelector } from "react-redux";
 const Header = () => {
   const navigate = useNavigate();
   const userData = useSelector((state) => state.user.userData);
-  const url = `${PICTURE_BASE_URL}${userData?.profilePicture}`;
   return (
     <>
       <header className="h-16  gap-3 flex items-center justify-between px-6 border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-md bg-white/95">
@@ -48,12 +47,10 @@ const Header = () => {
               </Block>
             </Block>
             <Avatar className="h-9 w-9 border border-indigo-100 shadow-sm">
-              <AvatarImage
-                src={url}
-                alt="Elena Rodriguez"
-              />
               <AvatarFallback className="bg-indigo-600 text-white text-xs font-bold">
-                ER
+                {(userData?.firstName ||
+                  userData?.email ||
+                  "U")[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </Block>

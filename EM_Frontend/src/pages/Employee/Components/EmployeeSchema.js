@@ -10,8 +10,6 @@ export const employeeSchema = z.object({
 
   role: z.string().min(1, "required"),
   isActive: z.string().min(1, "required"),
-
-  profilePicture: z.any().optional(),
 });
 
 export default employeeSchema;

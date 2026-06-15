@@ -83,19 +83,9 @@ const Employees = () => {
         return (
           <div className="flex items-center gap-2">
             <Avatar className="w-10 h-10" size="sm">
-              {(() => {
-                const pic = row.profilePicture || "";
-                const src = pic
-                  ? `${PICTURE_BASE_URL?.replace(/\/$/, "")}/${pic?.replace(/^\//, "")}`
-                  : null;
-                return src ? (
-                  <AvatarImage src={src} alt="Profile" />
-                ) : (
-                  <AvatarFallback>
-                    {(row.firstName || row.email || "U")[0]?.toUpperCase()}
-                  </AvatarFallback>
-                );
-              })()}
+              <AvatarFallback>
+                {(row.firstName || row.email || "U")[0]?.toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <span>
               {row.firstName} {row.lastName}

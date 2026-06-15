@@ -10,12 +10,8 @@ const AddEmployee = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (data) => {
-    const formData = new FormData();
-    console.log(data);
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    addEmployee(formData).then((res) => {
+    // send JSON (no file uploads)
+    addEmployee(data).then((res) => {
       if (res?.error) {
         toast.error(res?.error?.data?.message || "Failed to add employee.");
       } else {

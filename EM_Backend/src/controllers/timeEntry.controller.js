@@ -41,7 +41,8 @@ export const createTimeEntry = async (req, res) => {
     if (totalMinutes < 0) {
       return res.status(400).json({
         success: false,
-        message: "Break duration cannot exceed the total duration of the work shift.",
+        message:
+          "Break duration cannot exceed the total duration of the work shift.",
       });
     }
 
@@ -111,7 +112,10 @@ export const getMyTimeEntries = async (req, res) => {
       employee: employeeId,
       status: "Pending",
     });
-    const pendingMins = pendingEntries.reduce((acc, entry) => acc + (entry.duration || 0), 0);
+    const pendingMins = pendingEntries.reduce(
+      (acc, entry) => acc + (entry.duration || 0),
+      0,
+    );
     const pendingHours = Number((pendingMins / 60).toFixed(2));
 
     // 2. Approved this month hours
@@ -124,7 +128,10 @@ export const getMyTimeEntries = async (req, res) => {
       status: "Approved",
       date: { $gte: startOfMonth },
     });
-    const approvedMins = approvedEntries.reduce((acc, entry) => acc + (entry.duration || 0), 0);
+    const approvedMins = approvedEntries.reduce(
+      (acc, entry) => acc + (entry.duration || 0),
+      0,
+    );
     const approvedHours = Number((approvedMins / 60).toFixed(2));
 
     return res.status(200).json({
@@ -170,7 +177,7 @@ export const getAllTimeEntries = async (req, res) => {
     const skipNum = (pageNum - 1) * limitNum;
 
     let entriesQuery = TimeEntry.find(filter)
-      .populate("employee", "firstName lastName email profilePicture role")
+      .populate("employee", "firstName lastName email role")
       .populate("approvedBy", "firstName lastName email")
       .sort({ date: -1, createdAt: -1 });
 
@@ -183,8 +190,7 @@ export const getAllTimeEntries = async (req, res) => {
         if (!entry.employee) return false;
         const fullName = `${entry.employee.firstName} ${entry.employee.lastName}`;
         return (
-          fullName.match(searchRegex) ||
-          entry.employee.email.match(searchRegex)
+          fullName.match(searchRegex) || entry.employee.email.match(searchRegex)
         );
       });
     }
