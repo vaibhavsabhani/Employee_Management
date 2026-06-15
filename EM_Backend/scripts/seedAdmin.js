@@ -5,7 +5,8 @@ import User from "../src/models/user.js";
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/employee_db";
+const MONGO_URI =
+  process.env.MONGO_URI || "mongodb://localhost:27017/employee_db";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@12345";
 const ADMIN_FIRST_NAME = process.env.ADMIN_FIRST_NAME || "Admin";

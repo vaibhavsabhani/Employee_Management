@@ -10,7 +10,6 @@ import React, { useCallback } from "react";
 import DataTable from "@/components/common/DataTable";
 import { Routes, useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { PICTURE_BASE_URL } from "@/constant/constant";
 import { DeleteIcon, EditIcon, ViewIcon } from "@/utils/icons";
 import Block from "@/components/custom/Block";
 import { toast } from "sonner";
@@ -126,7 +125,9 @@ const Employees = () => {
       render: (row) => (
         <Block className="flex items-center gap-2">
           <ViewIcon
-            onClick={() => navigate(ROUTES.EMPLOYEE_PROFILE)}
+            onClick={() =>
+              navigate(ROUTES.EMPLOYEE_PROFILE.replace(":id", row.userId))
+            }
             width={18}
             height={18}
             className="text-indigo-600 hover:text-indigo-800 cursor-pointer"
@@ -135,7 +136,9 @@ const Employees = () => {
             className="cursor-pointer"
             width={18}
             height={18}
-            onClick={() => navigate(Routes.EMPLOYEE_EDIT)}
+            onClick={() =>
+              navigate(ROUTES.EMPLOYEE_EDIT.replace(":id", row.userId))
+            }
           />
           <DeleteIcon
             width={18}
@@ -167,7 +170,7 @@ const Employees = () => {
             <span>Export</span>
           </Button>
           <Button
-            onClick={() => navigate(ROUTES.ADD_EMPLOYEE)}
+            onClick={() => navigate(ROUTES.EMPLOYEE_ADD)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-150 flex items-center gap-2"
           >
             <Plus className="h-4.5 w-4.5" />
