@@ -80,9 +80,15 @@ export const addUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
+    // build base filter and include optional role filter from query
+    const baseFilter = { isActive: true };
+    if (req.query?.role) {
+      baseFilter.role = req.query.role;
+    }
+
     const result = await paginateQuery({
       model: User,
-      filter: { isActive: true },
+      filter: baseFilter,
       query: req.query,
       searchFields: ["firstName", "middleName", "lastName", "email"],
       select: "-password",
