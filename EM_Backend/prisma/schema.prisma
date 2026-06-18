@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        String   @id @default(uuid()) @map("id")
+  name      String   @unique @map("name")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id             String   @id @default(uuid()) @map("id")
+  firstName      String   @map("first_name")
+  middleName     String?  @map("middle_name")
+  lastName       String   @map("last_name")
+  email          String   @unique @map("email")
+  password       String   @map("password")
+  phoneNumber    String?  @unique @map("phone_number")
+  profilePicture String?  @map("profile_picture")
+  isActive       Boolean  @default(true) @map("is_active")
+  roleId         String   @map("role_id")
+  role           Role     @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  createdAt      DateTime @default(now()) @map("created_at")
+  createdBy      String?  @map("created_by")
+
+  employeeTimeEntries TimeEntry[] @relation("EmployeeTimeEntries")
+  approvedTimeEntries TimeEntry[] @relation("ApprovedTimeEntries")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  updatedBy           String?     @map("updated_by")
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model TimeEntryStatus {
+  id        Int      @id @default(autoincrement()) @map("id")
+  name      String   @unique @map("name")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  timeEntries TimeEntry[]
+
+  @@map("time_entry_statuses")
+}
+
+model TimeEntry {
+  id              String          @id @default(uuid()) @map("id")
+  employeeId      String          @map("employee_id")
+  employee        User            @relation("EmployeeTimeEntries", fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  date            DateTime        @map("date")
+  startTime       String          @map("start_time")
+  endTime         String          @map("end_time")
+  breakDuration   Int             @default(0) @map("break_duration")
+  notes           String?         @map("notes")
+  duration        Int             @map("duration")
+  statusId        Int             @map("status_id")
+  status          TimeEntryStatus @relation(fields: [statusId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  approvedById    String?         @map("approved_by_id")
+  approvedBy      User?           @relation("ApprovedTimeEntries", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  rejectionReason String?         @map("rejection_reason")
+  isActive        Boolean         @default(true) @map("is_active")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  createdBy       String?         @map("created_by")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  updatedBy       String?         @map("updated_by")
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([statusId])
+  @@index([date])
+  @@map("time_entries")
+}

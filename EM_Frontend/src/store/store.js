@@ -5,12 +5,6 @@ import employeeSlice from "@/store/reducer";
 import { employeeApi } from "./Action/Employee";
 import { userApi } from "./Action/User";
 import { timeTrackingApi } from "./Action/TimeTracking";
-import { attendanceApi } from "./Action/attendanceAction";
-import { leaveApi } from "./Action/leaveAction";
-import { notificationApi } from "./Action/notificationAction";
-import attendanceReducer from "./Reducer/attendanceReducer";
-import leaveReducer from "./Reducer/leaveReducer";
-import notificationReducer from "./Reducer/notificationReducer";
 import userSlice from "./Reducer/User";
 
 export const store = configureStore({
@@ -19,9 +13,6 @@ export const store = configureStore({
     [employeeApi.reducerPath]: employeeApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [timeTrackingApi.reducerPath]: timeTrackingApi.reducer,
-    [attendanceApi.reducerPath]: attendanceApi.reducer,
-    [leaveApi.reducerPath]: leaveApi.reducer,
-    [notificationApi.reducerPath]: notificationApi.reducer,
     employees: employeeSlice,
     user: userSlice,
   },
@@ -32,8 +23,5 @@ export const store = configureStore({
       employeeApi.middleware,
       userApi.middleware,
       timeTrackingApi.middleware,
-      attendanceApi.middleware,
-      leaveApi.middleware,
-      notificationApi.middleware,
     ),
 });
