@@ -3,7 +3,11 @@
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
-const RoleGuard = ({ children, allowedRoles = [], redirectTo = "/unauthorized" }) => {
+const RoleGuard = ({
+  children,
+  allowedRoles = [],
+  redirectTo = "/unauthorized",
+}) => {
   const user = useSelector((state) => state.user?.userData?.role);
 
   let userRole = user;
@@ -25,7 +29,7 @@ const RoleGuard = ({ children, allowedRoles = [], redirectTo = "/unauthorized" }
     return children;
   }
 
-  if (!allowedRoles.includes(userRole)) {
+  if (!allowedRoles.includes(userRole?.name)) {
     return <Navigate to={redirectTo} replace />;
   }
 

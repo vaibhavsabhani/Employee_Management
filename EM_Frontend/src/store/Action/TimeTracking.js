@@ -15,7 +15,7 @@ export const timeTrackingApi = createApi({
   endpoints: (builder) => ({
     addTimeEntry: builder.mutation({
       query: (data) => ({
-        url: "/time-tracking",
+        url: "/time-entry",
         method: "POST",
         body: data,
       }),
@@ -31,7 +31,7 @@ export const timeTrackingApi = createApi({
         params.append("limit", String(limit));
 
         return {
-          url: `/time-tracking/my?${params.toString()}`,
+          url: `/time-entry/my-entries?${params.toString()}`,
           method: "GET",
         };
       },
@@ -47,7 +47,7 @@ export const timeTrackingApi = createApi({
         params.append("limit", String(limit));
 
         return {
-          url: `/time-tracking?${params.toString()}`,
+          url: `/time-entry?${params.toString()}`,
           method: "GET",
         };
       },
@@ -56,7 +56,7 @@ export const timeTrackingApi = createApi({
 
     approveTimeEntry: builder.mutation({
       query: (id) => ({
-        url: `/time-tracking/${id}/approve`,
+        url: `/time-entry/approve/${id}`,
         method: "PUT",
       }),
       invalidatesTags: ["TimeEntry"],
@@ -64,7 +64,7 @@ export const timeTrackingApi = createApi({
 
     rejectTimeEntry: builder.mutation({
       query: ({ id, reason }) => ({
-        url: `/time-tracking/${id}/reject`,
+        url: `/time-entry/reject/${id}`,
         method: "PUT",
         body: { reason },
       }),

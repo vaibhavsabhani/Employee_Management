@@ -15,16 +15,13 @@ export const employeeApi = createApi({
     prepareHeaders: commonHeaders,
   }),
 
-  tagTypes: ["Employee"],
-
   endpoints: (builder) => ({
     addEmployee: builder.mutation({
       query: (data) => ({
-        url: "/employee/add",
+        url: "/user",
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Employee"],
     }),
 
     getEmployees: builder.query({
@@ -47,7 +44,7 @@ export const employeeApi = createApi({
         params.append("limit", String(limit));
 
         return {
-          url: `/employee?${params.toString()}`,
+          url: `/user?${params.toString()}`,
           method: "GET",
         };
       },
@@ -76,7 +73,7 @@ export const employeeApi = createApi({
 
     getEmployeeById: builder.mutation({
       query: (id) => ({
-        url: `/employee/${id}`,
+        url: `/user/${id}`,
         method: "GET",
       }),
       providesTags: ["Employee"],
@@ -99,19 +96,17 @@ export const employeeApi = createApi({
 
     updateEmployee: builder.mutation({
       query: ({ id, data }) => ({
-        url: `/employee/${id}`,
+        url: `/user/${id}`,
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: ["Employee"],
     }),
 
     deleteEmployee: builder.mutation({
       query: (id) => ({
-        url: `/employee/${id}`,
+        url: `/user/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Employee"],
     }),
   }),
 });

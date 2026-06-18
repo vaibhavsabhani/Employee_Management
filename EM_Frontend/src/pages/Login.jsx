@@ -29,7 +29,7 @@ export default function Login() {
       const response = await login(data).unwrap();
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
-      localStorage.setItem("role", response.user.role);
+      localStorage.setItem("role", response.user.role.name);
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
       console.log("Login Error:", error);

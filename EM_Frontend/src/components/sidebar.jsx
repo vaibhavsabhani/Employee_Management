@@ -2,7 +2,11 @@ import React from "react";
 import Block from "./custom/Block";
 import { LogOut, Building } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { bottomSidebarItems, ROUTES, sidebarItems } from "@/components/sidebar.route";
+import {
+  bottomSidebarItems,
+  ROUTES,
+  sidebarItems,
+} from "@/components/sidebar.route";
 import { useLogoutMutation } from "@/store/action";
 import { Button } from "./ui/button";
 import { useSelector } from "react-redux";
@@ -11,7 +15,7 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const userData = useSelector((state) => state.user.userData);
-  const userRole = userData.role;
+  const userRole = userData?.role?.name;
 
   const [logout] = useLogoutMutation();
 
@@ -69,16 +73,18 @@ const Sidebar = () => {
             <Link
               key={item.label}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative ${isActive
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
+                isActive
                   ? "text-indigo-600 bg-indigo-50/80 font-semibold"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
+              }`}
             >
               <Icon
-                className={`h-4.5 w-4.5 transition-colors duration-200 ${isActive
+                className={`h-4.5 w-4.5 transition-colors duration-200 ${
+                  isActive
                     ? "text-indigo-600"
                     : "text-slate-400 group-hover:text-slate-600"
-                  }`}
+                }`}
               />
               <span>{item.label}</span>
               {isActive && (
