@@ -1,9 +1,10 @@
 export const prepareHeaders = (headers: Headers) => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (typeof window !== "undefined") {
+    const token = JSON.parse(localStorage.getItem("accessToken")!)
 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
   }
 
   headers.set("Accept", "application/json");
