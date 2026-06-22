@@ -35,14 +35,32 @@ model User {
   role           Role     @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   createdAt      DateTime @default(now()) @map("created_at")
   createdBy      String?  @map("created_by")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  updatedBy      String?  @map("updated_by")
 
-  employeeTimeEntries TimeEntry[] @relation("EmployeeTimeEntries")
-  approvedTimeEntries TimeEntry[] @relation("ApprovedTimeEntries")
-  updatedAt           DateTime    @updatedAt @map("updated_at")
-  updatedBy           String?     @map("updated_by")
+  employeeTimeEntries TimeEntry[]          @relation("EmployeeTimeEntries")
+  approvedTimeEntries TimeEntry[]          @relation("ApprovedTimeEntries")
+  passwordResetTokens PasswordResetToken[] @relation("UserPasswordResetTokens")
 
   @@index([roleId])
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @map("id")
+  token     String   @unique @map("token")
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  user User @relation("UserPasswordResetTokens", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 model TimeEntryStatus {

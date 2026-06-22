@@ -9,7 +9,6 @@ export default function Home() {
   const accessToken = useLocalStorageValue("accessToken");
 
   useEffect(() => {
-    debugger
     if (!accessToken) {
       router.replace("/login");
     }

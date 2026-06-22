@@ -1,9 +1,8 @@
 "use client";
 
 import { AuthLayout } from "@/src/components/custom/AuthLayout";
-import { ArrowRight, Building2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-
+import { Toast } from "@/src/components/custom/Toast";
+import { InputField } from "@/src/components/form/InputField";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -13,41 +12,43 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Form } from "@/src/components/ui/form";
-import { InputField } from "@/src/components/form/InputField";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
 import {
-  loginSchema,
-  type LoginFormInput,
-  type LoginFormValues,
-} from "@/src/schema/login.schema";
-import { useLoginMutation } from "@/src/store/action";
-import { Toast } from "@/src/components/custom/Toast";
-import { setLocalStorage } from "@/src/lib/utils";
-import { LoginResponse } from "@/src/types/auth.types";
+  forgetPasswordFormInput,
+  forgetPasswordFormValues,
+  ForgetPasswordSchema,
+} from "@/src/schema/forgetpassword.schema";
+import { useForgetPasswordMutation } from "@/src/store/action";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, ArrowRight, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 
-const LoginPage = () => {
+const ForgetPasswordPage = () => {
   const router = useRouter();
-  const [login, { isLoading }] = useLoginMutation();
-  const form = useForm<LoginFormInput, undefined, LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+
+  const form = useForm<
+    forgetPasswordFormInput,
+    undefined,
+    forgetPasswordFormValues
+  >({
+    resolver: zodResolver(ForgetPasswordSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    try {
-      const loginResponse = (await login(data).unwrap()) as LoginResponse;
-      setLocalStorage("accessToken", loginResponse.accessToken);
-      setLocalStorage("user", loginResponse.user);
-      Toast(loginResponse, "success");
-      router.push("/");
-    } catch (error) {
-      Toast(error, "error");
+  const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
+
+  const onSubmit = async (data: forgetPasswordFormValues) => {
+    const res = await forgetPassword(data?.email)
+    if (res?.error) {
+      Toast(res, "error");
+      return;
     }
+    Toast(res, "success");
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
   };
 
   return (
@@ -69,10 +70,10 @@ const LoginPage = () => {
           </div>
           <div className="space-y-2">
             <CardTitle className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
-              Welcome back
+              Reset Password
             </CardTitle>
             <CardDescription className="max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Please enter your enterprise credentials to access your dashboard.
+              Please enter your Email to Get the Reset Password link.
             </CardDescription>
           </div>
         </CardHeader>
@@ -89,32 +90,25 @@ const LoginPage = () => {
                 placeholder="e.g. name@company.com"
               />
 
-              <InputField
-                control={form.control}
-                name="password"
-                label="Password"
-                required
-                type="password"
-                placeholder="Enter your password"
-              />
-
               <div className="flex justify-end pt-1">
                 <button
                   type="button"
-                  className="text-sm font-medium text-blue-700 transition-colors hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200 cursor-pointer"
+                  className="flex items-center gap-1 text-sm font-medium text-blue-700 transition-colors hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200 cursor-pointer"
                   onClick={() => {
-                    router.push("/forget-password");
+                    router.push("/login");
                   }}
                 >
-                  Forgot Password?
+                  <ArrowLeft className="size-3" />
+                  Back to Login
                 </button>
               </div>
 
               <Button
                 type="submit"
                 className="mt-2 h-11 w-full rounded-xl text-sm font-semibold shadow-[0_18px_40px_rgba(15,45,107,0.28)] transition-all hover:-translate-y-0.5 hover:bg-[#12357d]"
+                disabled={isLoading}
               >
-                Sign In
+                {isLoading ? "Sending..." : "Send Reset Link"}
                 <ArrowRight className="size-4" />
               </Button>
             </form>
@@ -125,4 +119,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default ForgetPasswordPage;
