@@ -43,6 +43,7 @@ const LoginPage = () => {
       const loginResponse = (await login(data).unwrap()) as LoginResponse;
       setLocalStorage("accessToken", loginResponse.accessToken);
       setLocalStorage("user", loginResponse.user);
+      setLocalStorage("role", loginResponse.user.role.name);
       Toast(loginResponse, "success");
       router.push("/");
     } catch (error) {

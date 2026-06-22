@@ -14,5 +14,9 @@ export default function Home() {
     }
   }, [router, accessToken]);
 
-  return null;
+  return (
+    <>
+      <h1>Welcome to the Dashboard</h1>
+    </>
+  );
 }

@@ -241,7 +241,7 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
+          className="flex size-full flex-col bg-sidebar shadow-[4px_0_24px_rgba(0,0,0,0.35)] group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
         >
           {children}
         </div>
@@ -333,7 +333,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 p-2 border-b border-sidebar-border", className)}
       {...props}
     />
   )
@@ -344,7 +344,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-footer"
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 p-2 border-t border-sidebar-border", className)}
       {...props}
     />
   )
@@ -448,7 +448,7 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
     <ul
       data-slot="sidebar-menu"
       data-sidebar="menu"
-      className={cn("flex w-full min-w-0 flex-col gap-0", className)}
+      className={cn("flex w-full min-w-0 flex-col gap-0.5 px-2 py-1", className)}
       {...props}
     />
   )
@@ -466,18 +466,36 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate",
+  // Base styles — transition covers bg, color AND the translate for the hover slide effect
+  "peer/menu-button group/menu-button flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 text-left text-sm font-medium ring-sidebar-ring outline-hidden transition-all duration-150 ease-out" +
+  " text-sidebar-foreground" +
+  // Hover
+  " hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-0.5" +
+  // Icon styles
+  " [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:opacity-75 hover:[&_svg]:opacity-100" +
+  // Collapsed icon mode
+  " group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:justify-center" +
+  // Active state — highlighted bg + full opacity text
+  " data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-active:font-semibold data-active:[&_svg]:opacity-100" +
+  // Click active
+  " active:scale-[0.98]" +
+  // Misc
+  " group-has-data-[sidebar=menu-action]/menu-item:pr-8" +
+  " focus-visible:ring-2" +
+  " disabled:pointer-events-none disabled:opacity-40" +
+  " aria-disabled:pointer-events-none aria-disabled:opacity-40" +
+  " [&>span:last-child]:truncate",
   {
     variants: {
       variant: {
-        default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        default: "",
         outline:
-          "bg-background shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_var(--sidebar-accent)]",
+          "bg-sidebar-border/10 shadow-[0_0_0_1px_var(--sidebar-border)] hover:shadow-[0_0_0_1px_var(--sidebar-primary)]",
       },
       size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
+        default: "h-10 py-2.5",
+        sm: "h-8 py-1.5 text-xs",
+        lg: "h-12 py-3 text-sm group-data-[collapsible=icon]:p-0!",
       },
     },
     defaultVariants: {
