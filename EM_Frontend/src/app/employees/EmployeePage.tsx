@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 
 import usePaginatedQuery from "@/src/hooks/usePagination";
@@ -15,6 +16,7 @@ const defaultEmployeeFilters = {
 };
 
 const EmployeePage = () => {
+  const router = useRouter();
   const [getEmployees] = useLazyGetEmployeesQuery();
 
   const fetchEmployeeData = useCallback(
@@ -118,7 +120,7 @@ const EmployeePage = () => {
             <button
               className="rounded border px-3 py-1"
               onClick={() => {
-                console.log("Edit", row.original);
+                router.push(`/employees/edit/${row.original.id}`);
               }}
             >
               Edit
@@ -137,7 +139,7 @@ const EmployeePage = () => {
         action={
           <Button
             onClick={() => {
-              console.log("Add Employee");
+              router.push("/employees/add");
             }}
           >
             Add Employee
