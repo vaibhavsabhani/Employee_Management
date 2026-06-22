@@ -68,10 +68,10 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-  const measuredElements = ["PageHeading", "Filter", "hidePagination"];
+  const measuredElements = ["header", "Filter", "hidePagination"];
   if (showExtraHeader) measuredElements.push(showExtraHeader);
 
-  const totalOffset = useDynamicHeight(measuredElements, 135);
+  const totalOffset = useDynamicHeight(measuredElements, 100);
   const finalHeight = maxHeight || `calc(100vh - ${totalOffset}px)`;
 
   const PAGE_WINDOW = 5;

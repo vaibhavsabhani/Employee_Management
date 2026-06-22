@@ -22,7 +22,7 @@ export function Header({
   userRole,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 h-16 border-b bg-white">
+    <header className="sticky top-0 z-30 h-16 border-b bg-white" id="header">
       <div className="flex h-full items-center justify-between px-4 sm:px-6">
 
         {/* Left — mobile menu trigger + breadcrumb */}

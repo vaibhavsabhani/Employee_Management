@@ -7,6 +7,8 @@ import usePaginatedQuery from "@/src/hooks/usePagination";
 import { useLazyGetEmployeesQuery } from "@/src/store/action";
 
 import { DataTable } from "@/src/components/custom/DataTable";
+import { PageHeader } from "@/src/components/custom/PageHeader";
+import { Button } from "@/src/components/ui/button";
 
 const defaultEmployeeFilters = {
   search: "",
@@ -53,7 +55,7 @@ const EmployeePage = () => {
     defaultFilters: defaultEmployeeFilters,
     transformResponse: transformEmployeeResponse,
   });
-
+  console.log(data, "<<")
   const onApply = (appliedFilters: any) => {
     updateFilters(appliedFilters);
   };
@@ -75,6 +77,17 @@ const EmployeePage = () => {
     {
       accessorKey: "email",
       header: "Email",
+    },
+    {
+      accessorKey: "phoneNumber",
+      header: "Phone Number",
+      cell: ({ row }) => {
+        return (
+          <span>
+            {row.original?.phoneNumber ?? "-"}
+          </span>
+        )
+      }
     },
     {
       accessorKey: "role.name",
@@ -118,31 +131,37 @@ const EmployeePage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">
-          Employee Directory
-        </h1>
-
-        <p className="text-muted-foreground">
-          Manage employees and their roles.
-        </p>
-      </div>
-
-
-      <DataTable
-        columns={employeeColumns}
-        data={data}
-        loading={loading}
-        onNext={nextPage}
-        onPrev={prevPage}
-        canNext={canNext}
-        canPrev={canPrev}
-        page={page}
-        total={totalPages}
-        totalRecords={total}
-        limit={limit}
-        setLimit={setLimit}
+      <PageHeader
+        title="Employee Directory"
+        description="Manage employees and their roles."
+        action={
+          <Button
+            onClick={() => {
+              console.log("Add Employee");
+            }}
+          >
+            Add Employee
+          </Button>
+        }
       />
+
+      <div className="w-full">
+        <DataTable
+          columns={employeeColumns}
+          data={data}
+          loading={loading}
+          onNext={nextPage}
+          onPrev={prevPage}
+          canNext={canNext}
+          canPrev={canPrev}
+          page={page}
+          total={totalPages}
+          totalRecords={total}
+          limit={limit}
+          setLimit={setLimit}
+          showExtraHeader={"pageHeading"}
+        />
+      </div>
     </div>
   );
 };
