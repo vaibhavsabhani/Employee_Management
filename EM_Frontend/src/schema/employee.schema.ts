@@ -18,8 +18,8 @@ export const employeeSchema = z.object({
     .optional()
     .or(z.literal("")),
   address: z.string().optional(),
-  role: z.enum(["admin", "employee"]).default("employee"),
-  isActive: z.boolean().default(true),
+  role: z.enum(["admin", "employee"]),
+  isActive: z.boolean(),
 });
 
 export type EmployeeFormInput = z.infer<typeof employeeSchema>;

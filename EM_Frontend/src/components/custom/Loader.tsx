@@ -1,10 +1,9 @@
 import { cn } from "@/src/lib/utils";
-import React from "react";
 import { TailSpin } from "react-loader-spinner";
 
 const Loader = ({
   className,
-  color = "var(--hyperlink-bg)", // default blue
+  color = "var(--sidebar-primary)", // default blue
 }: {
   className?: string;
   color?: string;

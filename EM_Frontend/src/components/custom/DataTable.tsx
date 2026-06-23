@@ -1,13 +1,30 @@
 "use client";
 
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { useMemo } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { SelectField } from "../form/SelectField";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import useDynamicHeight from "@/src/hooks/useDynamicHeight";
-import { Loader } from "lucide-react";
 import ScrollAreaComponent from "./ScrollAreaComponent";
-
+import Loader from "./Loader";
 
 interface DataTableProps<TData = unknown, TValue = unknown> {
   columns?: ColumnDef<TData, TValue>[];
@@ -71,7 +88,7 @@ export function DataTable<TData, TValue>({
   const measuredElements = ["header", "Filter", "hidePagination"];
   if (showExtraHeader) measuredElements.push(showExtraHeader);
 
-  const totalOffset = useDynamicHeight(measuredElements, 100);
+  const totalOffset = useDynamicHeight(measuredElements, 80);
   const finalHeight = maxHeight || `calc(100vh - ${totalOffset}px)`;
 
   const PAGE_WINDOW = 5;
@@ -98,7 +115,7 @@ export function DataTable<TData, TValue>({
   };
 
   const limitSelectOptions = limitOptions.map((opt) => ({
-    name: String(opt),
+    label: String(opt),
     value: String(opt),
   }));
 
@@ -203,14 +220,21 @@ export function DataTable<TData, TValue>({
           {/* LEFT */}
           {setLimit && displayData.length > 0 && totalRecords > 9 && (
             <div className="flex items-center gap-2">
-              <SelectField
-                name="limit"
-                placeholder="Rows"
+              <Select
                 value={String(limit ?? "")}
-                options={limitSelectOptions}
-                onChange={(val) => setLimit?.(Number    (val))}
-              />
-
+                onValueChange={(val) => setLimit(Number(val))}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="Rows" />
+                </SelectTrigger>
+                <SelectContent>
+                  {limitSelectOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <span className="text-sm  ">Records Per Page</span>
             </div>
           )}
@@ -234,8 +258,10 @@ export function DataTable<TData, TValue>({
                   <button
                     key={p}
                     onClick={() => jumpToPage(p)}
-                    className={`px-3 py-1 border-blue-400 text-sm rounded cursor-pointer ${
-                      p === currentPage ? "text-white " : "border"
+                    className={`px-3 py-1 text-sm rounded cursor-pointer transition-colors ${
+                      p === currentPage
+                        ? "bg-sidebar-primary text-white font-semibold"
+                        : "border border-slate-300 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
                     {p}

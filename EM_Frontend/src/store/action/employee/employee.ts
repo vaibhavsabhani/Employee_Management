@@ -61,10 +61,52 @@ export const employeeApi = createApi({
     }),
 
     addEmployee: builder.mutation({
-      query: (formData) => ({
+      query: (body) => ({
         url: "/user",
         method: "POST",
-        body: formData,
+        body,
+      }),
+    }),
+
+    getSingleEmployee: builder.mutation({
+      query: (employeeId) => ({
+        url: `/user/${employeeId}`,
+        method: "GET",
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setEmployeeLoading());
+
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            setEmployee({
+              data: [data],
+              total: 1,
+              offset: 0,
+              limit: 1,
+            }),
+          );
+        } catch (e: any) {
+          console.error(">>>>> setEmployee error", e);
+
+          dispatch(setEmployeeError(e?.message || "Failed to load employee"));
+        }
+      },
+    }),
+
+    editEmployee: builder.mutation({
+      query: ({ employeeId, body }) => ({
+        url: `/user/${employeeId}`,
+        method: "PATCH",
+        body,
+      }),
+    }),
+
+    deleteEmployee: builder.mutation({
+      query: (employeeId) => ({
+        url: `/user/${employeeId}`,
+        method: "DELETE",
       }),
     }),
   }),
@@ -74,4 +116,7 @@ export const {
   useLazyGetEmployeesQuery,
   useGetEmployeesQuery,
   useAddEmployeeMutation,
+  useGetSingleEmployeeMutation,
+  useEditEmployeeMutation,
+  useDeleteEmployeeMutation,
 } = employeeApi;

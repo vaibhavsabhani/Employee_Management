@@ -1,5 +1,6 @@
 "use client";
 
+import Loader from "@/src/components/custom/Loader";
 import { PageHeader } from "@/src/components/custom/PageHeader";
 import { Toast } from "@/src/components/custom/Toast";
 import { InputField } from "@/src/components/form/InputField";
@@ -18,22 +19,38 @@ import {
   EmployeeFormValues,
   employeeSchema,
 } from "@/src/schema/employee.schema";
-import { useAddEmployeeMutation } from "@/src/store/action";
+import {
+  useAddEmployeeMutation,
+  useEditEmployeeMutation,
+  useGetSingleEmployeeMutation,
+} from "@/src/store/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Contact,
   Info,
+  Loader2,
   Save,
   ShieldCheck,
   UploadCloud,
   User,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 
 const page = () => {
   const [addEmployee, { isLoading }] = useAddEmployeeMutation();
+  const [editEmployee, { isLoading: isEditLoading }] =
+    useEditEmployeeMutation();
   const router = useRouter();
+  const params = useParams();
+  console.log("params", params);
+  const [getSingleEmployee, { isLoading: isGetSingleEmployeeLoading }] =
+    useGetSingleEmployeeMutation();
+
+  const data = useSelector((state: any) => state.employee.data[0]);
+  console.log("data", data);
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
@@ -52,30 +69,80 @@ const page = () => {
     },
   });
 
-  const handleSubmit = async (data: EmployeeFormValues) => {
+  useEffect(() => {
+    if (params?.employeeId && params?.employeeId !== "add") {
+      getSingleEmployee(params.employeeId as string);
+    }
+  }, [params?.employeeId, getSingleEmployee]);
+
+  useEffect(() => {
+    if (params?.employeeId === "add") {
+      form.reset();
+      return;
+    }
+
+    if (!data?.user) return;
+
+    const user = data.user;
+
+    form.reset({
+      firstName: user.firstName ?? "",
+      middleName: user.middleName ?? "",
+      lastName: user.lastName ?? "",
+      profilePicture: user.profilePicture ?? "",
+      email: user.email ?? "",
+      phoneNumber: user.phoneNumber ?? "",
+      panNumber: user.panNumber ?? "",
+      aadhaarNumber: user.aadhaarNumber ?? "",
+      address: user.address ?? "",
+      role: user.role?.name ?? "",
+      isActive: user.isActive ?? true,
+    });
+  }, [data, params?.employeeId, form]);
+
+  const handleSubmit = async (formData: EmployeeFormValues) => {
     const payload: Record<string, any> = {};
 
-    Object.entries(data).forEach(([key, value]) => {
+    Object.entries(formData).forEach(([key, value]) => {
       if (value !== "" && value !== null && value !== undefined) {
         payload[key] = value;
       }
     });
 
     try {
-      const res = await addEmployee(payload).unwrap();
+      const res =
+        params?.employeeId !== "add"
+          ? await editEmployee({
+              employeeId: params.employeeId as string,
+              body: payload,
+            }).unwrap()
+          : await addEmployee(payload).unwrap();
+
       Toast(res);
-      form.reset();
+
+      if (params?.employeeId === "add") {
+        form.reset();
+      }
+
       router.push("/employees");
     } catch (err: any) {
       Toast({ error: err }, "error");
     }
   };
 
+  if (isLoading || isEditLoading || isGetSingleEmployeeLoading) {
+    return <Loader />;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Add Employee"
-        description="Add employees and their roles."
+        title={params?.employeeId === "new" ? "Add Employee" : "Edit Employee"}
+        description={
+          params?.employeeId === "new"
+            ? "Add employees and their roles."
+            : "Edit employee information and roles."
+        }
       />
       <Form {...form}>
         <form
@@ -242,18 +309,22 @@ const page = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => {}}
+              onClick={() => router.back()}
               className="px-6 h-10 border-slate-300 text-slate-700 font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={false}
+              disabled={isLoading}
               className="px-6 h-10 flex items-center gap-2"
             >
-              <Save className="size-4" />
-              {"Save Employee"}
+              {isLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              {isLoading ? "Saving..." : "Save Employee"}
             </Button>
           </div>
         </form>

@@ -7,12 +7,18 @@ import {
 import {
   useLazyGetEmployeesQuery,
   useAddEmployeeMutation,
+  useGetSingleEmployeeMutation,
+  useEditEmployeeMutation,
+  useDeleteEmployeeMutation,
 } from "@/src/store/action/employee/employee";
 
 export {
   useLoginMutation,
   useAddEmployeeMutation,
+  useGetSingleEmployeeMutation,
   useForgetPasswordMutation,
   useResetPasswordMutation,
-  useLazyGetEmployeesQuery
+  useLazyGetEmployeesQuery,
+  useEditEmployeeMutation,
+  useDeleteEmployeeMutation,
 };

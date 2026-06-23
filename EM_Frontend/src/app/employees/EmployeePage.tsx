@@ -117,14 +117,14 @@ const EmployeePage = () => {
               View
             </button>
 
-            <button
+            <Button
               className="rounded border px-3 py-1"
               onClick={() => {
-                router.push(`/employees/edit/${row.original.id}`);
+                router.push(`/employees/${row.original.id}`);
               }}
             >
               Edit
-            </button>
+            </Button>
           </div>
         );
       },
