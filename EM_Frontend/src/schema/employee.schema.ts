@@ -17,8 +17,8 @@ export const employeeSchema = z.object({
     .regex(/^\d{12}$/, "Aadhaar must be a 12-digit number")
     .optional()
     .or(z.literal("")),
-  residentialAddress: z.string().optional(),
-  role: z.string().min(1, "Role is required"),
+  address: z.string().optional(),
+  role: z.enum(["admin", "employee"]).default("employee"),
   isActive: z.boolean().default(true),
 });
 

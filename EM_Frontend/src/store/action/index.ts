@@ -5,11 +5,13 @@ import {
 } from "@/src/store/action/auth/auth";
 
 import {
-  useLazyGetEmployeesQuery
+  useLazyGetEmployeesQuery,
+  useAddEmployeeMutation,
 } from "@/src/store/action/employee/employee";
 
 export {
   useLoginMutation,
+  useAddEmployeeMutation,
   useForgetPasswordMutation,
   useResetPasswordMutation,
   useLazyGetEmployeesQuery

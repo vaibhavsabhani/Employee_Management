@@ -7,6 +7,7 @@ import {
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,7 +15,10 @@ import { GetUsersDto } from './dto/get-users.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const {
@@ -23,12 +27,26 @@ export class UserService {
       lastName,
       email,
       phoneNumber,
-      roleId,
+      role,
       profilePicture,
       address,
       panNumber,
       aadhaarNumber,
     } = createUserDto;
+
+    if (!role) {
+      throw new BadRequestException('Role is required');
+    }
+
+    const roleData = await this.prisma.role.findUnique({
+      where: {
+        name: role.toLowerCase().trim(),
+      },
+    });
+
+    if (!roleData) {
+      throw new BadRequestException(`Role '${role}' not found`);
+    }
 
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -42,43 +60,33 @@ export class UserService {
       throw new BadRequestException('Email already exists');
     }
 
-    const role = await this.prisma.role.findUnique({
-      where: {
-        id: roleId,
-      },
-    });
-
-    if (!role) {
-      throw new BadRequestException('Role not found');
-    }
-
     const defaultPassword = 'Abcde@012024';
-
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
     const user = await this.prisma.user.create({
       data: {
         firstName: firstName.trim(),
-        middleName: middleName?.trim(),
+        middleName: middleName?.trim() || null,
         lastName: lastName.trim(),
         email: normalizedEmail,
         password: hashedPassword,
-
-        phoneNumber,
-        profilePicture,
-
-        address: address?.trim(),
-
-        panNumber: panNumber?.toUpperCase(),
-
-        aadhaarNumber,
-
-        roleId,
+        phoneNumber: phoneNumber || null,
+        profilePicture: profilePicture || null,
+        address: address?.trim() || null,
+        panNumber: panNumber?.toUpperCase() || null,
+        aadhaarNumber: aadhaarNumber || null,
+        roleId: roleData.id,
       },
       include: {
         role: true,
       },
     });
+
+    await this.mailService.sendEmployeeCredentialsEmail(
+      user.email,
+      `${user.firstName} ${user.lastName}`,
+      defaultPassword,
+    );
 
     const { password, ...userResponse } = user;
 
@@ -94,7 +102,7 @@ export class UserService {
       offset = '0',
       limit = '10',
       search = '',
-      roleId,
+      role,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = query;
@@ -105,8 +113,10 @@ export class UserService {
       isActive: true,
     };
 
-    if (roleId) {
-      where.roleId = roleId;
+    if (role) {
+      where.role = {
+        name: role.toLowerCase().trim(),
+      };
     }
 
     if (search) {
@@ -207,13 +217,27 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
+    const { role, ...rest } = updateUserDto;
+
+    let roleId: string | undefined;
+    if (role) {
+      const roleData = await this.prisma.role.findUnique({
+        where: { name: role.toLowerCase().trim() },
+      });
+      if (!roleData) {
+        throw new BadRequestException(`Role '${role}' not found`);
+      }
+      roleId = roleData.id;
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: {
         id,
       },
       data: {
-        ...updateUserDto,
-        email: updateUserDto.email?.toLowerCase().trim(),
+        ...rest,
+        ...(roleId && { roleId }),
+        email: rest.email?.toLowerCase().trim(),
       },
       include: {
         role: true,

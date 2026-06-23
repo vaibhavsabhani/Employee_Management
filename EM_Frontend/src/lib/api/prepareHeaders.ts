@@ -1,6 +1,8 @@
+import { getCookie } from "../cookieStorage";
+
 export const prepareHeaders = (headers: Headers) => {
   if (typeof window !== "undefined") {
-    const token = JSON.parse(localStorage.getItem("accessToken")!)
+    const token = getCookie("accessToken") || "null" as string | null;
 
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);

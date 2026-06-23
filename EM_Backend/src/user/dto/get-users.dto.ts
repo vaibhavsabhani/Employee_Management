@@ -24,7 +24,7 @@ export class GetUsersDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  roleId?: string;
+  role?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

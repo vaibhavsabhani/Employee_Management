@@ -161,7 +161,7 @@ const EmployeePage = () => {
           totalRecords={total}
           limit={limit}
           setLimit={setLimit}
-          showExtraHeader={"pageHeading"}
+          showExtraHeader={["pageHeading"]}
         />
       </div>
     </div>

@@ -24,8 +24,8 @@ import {
 } from "@/src/schema/login.schema";
 import { useLoginMutation } from "@/src/store/action";
 import { Toast } from "@/src/components/custom/Toast";
-import { setLocalStorage } from "@/src/lib/utils";
 import { LoginResponse } from "@/src/types/auth.types";
+import { setCookie } from "@/src/lib/cookieStorage";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -41,9 +41,9 @@ const LoginPage = () => {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const loginResponse = (await login(data).unwrap()) as LoginResponse;
-      setLocalStorage("accessToken", loginResponse.accessToken);
-      setLocalStorage("user", loginResponse.user);
-      setLocalStorage("role", loginResponse.user.role.name);
+      setCookie("accessToken", loginResponse.accessToken);
+      setCookie("user", JSON.stringify(loginResponse.user));
+      setCookie("role", loginResponse.user.role.name);
       Toast(loginResponse, "success");
       router.push("/");
     } catch (error) {
@@ -53,8 +53,8 @@ const LoginPage = () => {
 
   return (
     <AuthLayout>
-      <Card className="border-white/10 bg-white/96 shadow-[0_28px_80px_rgba(2,8,23,0.42)] backdrop-blur-xl">
-        <CardHeader className="space-y-5 border-b border-slate-200/80 px-8 pb-6 pt-8 dark:border-white/10 sm:px-10">
+      <Card className="border-white/10 bg-white shadow-[0_28px_80px_rgba(2,8,23,0.42)] backdrop-blur-xl pb-6">
+        <CardHeader className="space-y-5 border-b border-slate-200/80 px-8 pb-6 pt-8 dark:border-white/10 sm:px-10 bg-white/96  dark:bg-slate-950/96 backdrop-blur-xl">
           <div className="flex items-center gap-3 text-slate-950 dark:text-white">
             <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-700 via-blue-600 to-sky-500 text-white shadow-lg shadow-blue-950/20">
               <Building2 className="size-5" />

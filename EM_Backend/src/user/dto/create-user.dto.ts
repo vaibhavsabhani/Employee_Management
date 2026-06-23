@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, IsUUID, Length, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -58,7 +64,9 @@ export class CreateUserDto {
   })
   aadhaarNumber?: string;
 
-  @ApiProperty()
-  @IsUUID()
-  roleId!: string;
+  @ApiProperty({
+    example: 'employee',
+  })
+  @IsString()
+  role!: string;
 }

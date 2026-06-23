@@ -129,7 +129,7 @@ export function DataTable<TData, TValue>({
                           return (
                             <TableHead
                               key={header.id}
-                              className="first:rounded-tl-md last:rounded-tr-md text-left p-4 text-white"
+                              className="first:rounded-tl-md last:rounded-tr-md text-left p-4 text-white font-extrabold"
                               style={{
                                 width: header.getSize(),
                                 minWidth: header.column.columnDef.minSize,

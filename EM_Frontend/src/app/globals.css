@@ -79,14 +79,24 @@
   --radius: 0.625rem;
 
   /* ── Sidebar brand palette (edit here to retheme the whole sidebar) ── */
-  --sidebar: #030453;                        /* panel background – deep navy        */
-  --sidebar-foreground: #ffffff;             /* default text – muted blue-grey      */
-  --sidebar-primary: #370ef1;                /* accent / active colour – electric blue */
-  --sidebar-primary-foreground: #ffffff;     /* text on primary bg                  */
-  --sidebar-accent: rgba(79,128,255,0.18);   /* hover / active item bg              */
-  --sidebar-accent-foreground: #ffffff;      /* text when hovered / active          */
-  --sidebar-border: rgba(255,255,255,0.08);  /* dividers & borders                  */
-  --sidebar-ring: #1a326d;                   /* focus ring                          */
+  --sidebar: #030453; /* panel background – deep navy        */
+  --sidebar-foreground: #ffffff; /* default text – muted blue-grey      */
+  --sidebar-primary: #370ef1; /* accent / active colour – electric blue */
+  --sidebar-primary-foreground: #ffffff; /* text on primary bg                  */
+  --sidebar-accent: rgba(
+    79,
+    128,
+    255,
+    0.18
+  ); /* hover / active item bg              */
+  --sidebar-accent-foreground: #ffffff; /* text when hovered / active          */
+  --sidebar-border: rgba(
+    255,
+    255,
+    255,
+    0.08
+  ); /* dividers & borders                  */
+  --sidebar-ring: #1a326d; /* focus ring                          */
 }
 /* 4f80ff */
 .dark {

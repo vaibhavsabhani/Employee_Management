@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import { ROLES } from "@/src/constant/role";
+import { deleteCookie } from "@/src/lib/cookieStorage";
 
 type Props = {
   pathname: string;
@@ -44,8 +45,8 @@ const navigation = [
     accessRoles: [ROLES.ADMIN],
   },
   {
-    label: "Attendance",
-    href: "/attendance",
+    label: "Time Entry",
+    href: "/time-entry",
     icon: Clock3,
     accessRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
   },
@@ -68,27 +69,25 @@ export function AppSidebar({ pathname, userRole }: Props) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   const visibleNavigation = navigation.filter(
-    (item) => userRole && item.accessRoles.includes(userRole)
+    (item) => userRole && item.accessRoles.includes(userRole),
   );
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("role");
+    deleteCookie("accessToken");
+    deleteCookie("user");
+    deleteCookie("role");
+
     router.replace("/login");
   };
 
-  // Close mobile drawer after navigating to a module
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false);
   };
 
   return (
     <Sidebar collapsible="icon">
-      {/* ── Header / Logo ── */}
-      <SidebarHeader className="border-b border-[var(--sidebar-border)] pb-3">
+      <SidebarHeader className="border-b border-sidebar-border pb-3">
         <div className="flex items-center gap-3 px-3 pt-3 pb-1">
-          {/* Logo badge with glow */}
           <div
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
             style={{
@@ -99,7 +98,6 @@ export function AppSidebar({ pathname, userRole }: Props) {
             <Building2 className="h-5 w-5 text-white" />
           </div>
 
-          {/* Brand text — hidden when collapsed */}
           <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-bold tracking-tight text-white">
               Enterprise HR
@@ -114,8 +112,7 @@ export function AppSidebar({ pathname, userRole }: Props) {
         </div>
       </SidebarHeader>
 
-      {/* ── Navigation ── */}
-      <SidebarContent className="py-2">
+      <SidebarContent className="py-2 border-t border-gray-500">
         <SidebarMenu className="gap-0.5 px-2">
           {visibleNavigation.map((item) => {
             const Icon = item.icon;
@@ -130,24 +127,21 @@ export function AppSidebar({ pathname, userRole }: Props) {
                     "group/item relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                     "transition-all duration-150 ease-out",
                     "overflow-hidden",
-                    "text-[var(--sidebar-foreground)]",
-                    "hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-accent-foreground)] hover:translate-x-0.5",
+                    "text-sidebar-foreground",
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-0.5",
                     isActive
-                      ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-accent-foreground)]"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
                 >
-                  {/* Icon */}
                   <Icon size={18} className={"text-white"} />
 
-                  {/* Label — hidden when collapsed */}
-                  <span className="flex-1 truncate group-data-[collapsible=icon]:hidden">
+                  <span className="flex-1 truncate group-data-[collapsible=icon]:hidden font-extrabold">
                     {item.label}
                   </span>
 
-                  {/* Active dot indicator */}
                   {isActive && (
                     <span
                       className="h-1.5 w-1.5 shrink-0 rounded-full group-data-[collapsible=icon]:hidden"
@@ -164,8 +158,7 @@ export function AppSidebar({ pathname, userRole }: Props) {
         </SidebarMenu>
       </SidebarContent>
 
-      {/* ── Footer / Logout ── */}
-      <SidebarFooter className="border-t border-[var(--sidebar-border)] pt-2 pb-3">
+      <SidebarFooter className="border-t border-gray-500 pt-2">
         <SidebarMenu className="px-2">
           <SidebarMenuItem>
             <button
@@ -174,8 +167,8 @@ export function AppSidebar({ pathname, userRole }: Props) {
               className={[
                 "group/logout relative flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                 "transition-all duration-150 ease-out",
-                "text-[var(--sidebar-foreground)]",
-                "hover:bg-[var(--sidebar-accent)] hover:translate-x-0.5",
+                "text-sidebar-foreground",
+                "hover:bg-sidebar-accent hover:translate-x-0.5",
               ].join(" ")}
             >
               <LogOut
