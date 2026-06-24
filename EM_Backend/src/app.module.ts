@@ -6,6 +6,12 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { TimeEntryModule } from './time-entry/time-entry.module';
+import { LeaveModule } from './leave/leave.module';
+import { AttendanceModule } from './attendance/attendance.module';
+import { NotificationModule } from './notification/notification.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { UploadModule } from './upload/upload.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
 
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -18,6 +24,12 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     PrismaModule,
     TimeEntryModule,
+    LeaveModule,
+    AttendanceModule,
+    NotificationModule,
+    DashboardModule,
+    UploadModule,
+    ActivityLogModule,
     MailModule,
   ],
   controllers: [AppController],

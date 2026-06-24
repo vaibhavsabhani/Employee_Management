@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -49,7 +49,7 @@ interface DataTableProps<TData = unknown, TValue = unknown> {
 }
 
 export function DataTable<TData, TValue>({
-  columns,
+  columns = [],
   data,
   loading,
   onNext,
@@ -59,7 +59,7 @@ export function DataTable<TData, TValue>({
   page,
   hidePagination = false,
   total,
-  totalRecords,
+  totalRecords = 0,
   maxHeight,
   showExtraHeader,
   showAllRows = false,
@@ -69,6 +69,12 @@ export function DataTable<TData, TValue>({
   limitOptions = [10, 20, 30, 40, 50, 100],
   hideDataTable = true,
 }: DataTableProps<TData, TValue>) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const currentPage = page ?? 1;
   const totalPages = total ?? 1;
   const effectiveLimit = limit ?? 10;
@@ -85,18 +91,21 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-  const measuredElements = ["header", "Filter", "hidePagination"];
-  if (showExtraHeader) measuredElements.push(showExtraHeader);
 
-  const totalOffset = useDynamicHeight(measuredElements, 80);
+  const measuredElements = ["header", "Filter", "hidePagination"];
+  if (showExtraHeader?.length) {
+    measuredElements.push(...showExtraHeader);
+  }
+
+  const totalOffset = useDynamicHeight(measuredElements, 75);
   const finalHeight = maxHeight || `calc(100vh - ${totalOffset}px)`;
 
+  // Use "auto" until mounted to match the server-rendered HTML and avoid hydration mismatch
+  const scrollHeight = mounted ? finalHeight : "auto";
+
   const PAGE_WINDOW = 5;
-
   const startPage = Math.max(1, currentPage - Math.floor(PAGE_WINDOW / 2));
-
   const endPage = Math.min(totalPages, startPage + PAGE_WINDOW - 1);
-
   const visiblePages = Array.from(
     { length: endPage - startPage + 1 },
     (_, i) => startPage + i,
@@ -104,9 +113,7 @@ export function DataTable<TData, TValue>({
 
   const jumpToPage = (targetPage: number) => {
     if (!onNext || !onPrev || targetPage === currentPage) return;
-
     const diff = targetPage - currentPage;
-
     if (diff > 0) {
       for (let i = 0; i < diff; i++) onNext();
     } else {
@@ -124,14 +131,7 @@ export function DataTable<TData, TValue>({
   ) : (
     <div>
       {hideDataTable ? (
-        <ScrollAreaComponent
-          style={{
-            height:
-              typeof window !== "undefined" && window.innerWidth >= 1024
-                ? finalHeight
-                : "auto",
-          }}
-        >
+        <ScrollAreaComponent style={{ height: scrollHeight }}>
           <div className={`px-2 py-3 ${className}`}>
             {displayData.length > 0 ? (
               <div className="rounded outline-8">
@@ -142,71 +142,58 @@ export function DataTable<TData, TValue>({
                         key={headerGroup.id}
                         className="bg-sidebar-primary text-heading font-primary"
                       >
-                        {headerGroup.headers.map((header) => {
-                          return (
-                            <TableHead
-                              key={header.id}
-                              className="first:rounded-tl-md last:rounded-tr-md text-left p-4 text-white font-extrabold"
-                              style={{
-                                width: header.getSize(),
-                                minWidth: header.column.columnDef.minSize,
-                                maxWidth: header.column.columnDef.maxSize,
-                              }}
-                            >
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext(),
-                                  )}
-                            </TableHead>
-                          );
-                        })}
+                        {headerGroup.headers.map((header) => (
+                          <TableHead
+                            key={header.id}
+                            className="first:rounded-tl-md last:rounded-tr-md text-left p-4 text-white font-extrabold"
+                            style={{
+                              width: header.getSize(),
+                              minWidth: header.column.columnDef.minSize,
+                              maxWidth: header.column.columnDef.maxSize,
+                            }}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        ))}
                       </TableRow>
                     ))}
                   </TableHeader>
                   <TableBody>
-                    {!loading ? (
-                      table.getRowModel().rows.map((row) => (
-                        <TableRow
-                          key={row.id}
-                          data-state={row.getIsSelected() && "selected"}
-                        >
-                          {row.getVisibleCells().map((cell) => (
-                            <TableCell
-                              key={cell.id}
-                              className="p-4 first:rounded-bl-md last:rounded-br-md "
-                              style={{
-                                width: cell.column.getSize(),
-                                minWidth: cell.column.columnDef.minSize,
-                                maxWidth: cell.column.columnDef.maxSize,
-                              }}
-                            >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
-                          No results.
-                        </TableCell>
+                    {table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="p-4 first:rounded-bl-md last:rounded-br-md"
+                            style={{
+                              width: cell.column.getSize(),
+                              minWidth: cell.column.columnDef.minSize,
+                              maxWidth: cell.column.columnDef.maxSize,
+                            }}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
                       </TableRow>
-                    )}
+                    ))}
                   </TableBody>
                 </Table>
               </div>
             ) : (
-              <>
-                <p className="w-full flex justify-center ">No Data Found</p>
-              </>
+              <p className="w-full flex justify-center py-8 text-slate-400 dark:text-slate-500">
+                No Data Found
+              </p>
             )}
           </div>
         </ScrollAreaComponent>
@@ -217,7 +204,7 @@ export function DataTable<TData, TValue>({
           className="flex max-[570px]:flex-col min-[1033px]:flex-row flex-col min-[1033px]:gap-0 gap-3 items-center justify-between px-2 pt-4"
           id="hidePagination"
         >
-          {/* LEFT */}
+          {/* LEFT: rows per page */}
           {setLimit && displayData.length > 0 && totalRecords > 9 && (
             <div className="flex items-center gap-2">
               <Select
@@ -235,48 +222,46 @@ export function DataTable<TData, TValue>({
                   ))}
                 </SelectContent>
               </Select>
-              <span className="text-sm  ">Records Per Page</span>
+              <span className="text-sm">Records Per Page</span>
             </div>
           )}
 
-          {/* CENTER */}
-          <span className="text-sm ">Total Records : {totalRecords ?? 0}</span>
+          {/* CENTER: total */}
+          <span className="text-sm">Total Records : {totalRecords}</span>
 
-          {/* RIGHT */}
+          {/* RIGHT: pagination */}
           {displayData.length > 0 && totalRecords > 9 && (
-            <>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={onPrev}
-                  disabled={!canPrev}
-                  className={`px-2 py-1 text-sm disabled:opacity-50 font-semibold hover:underline ${!canPrev ? "" : "cursor-pointer"}`}
-                >
-                  Prev
-                </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={onPrev}
+                disabled={!canPrev}
+                className={`px-2 py-1 text-sm disabled:opacity-50 font-semibold hover:underline ${!canPrev ? "" : "cursor-pointer"}`}
+              >
+                Prev
+              </button>
 
-                {visiblePages.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => jumpToPage(p)}
-                    className={`px-3 py-1 text-sm rounded cursor-pointer transition-colors ${
-                      p === currentPage
-                        ? "bg-sidebar-primary text-white font-semibold"
-                        : "border border-slate-300 text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-
+              {visiblePages.map((p) => (
                 <button
-                  onClick={onNext}
-                  disabled={!canNext}
-                  className={`px-2 py-1 text-sm disabled:opacity-50 font-semibold hover:underline ${!canNext ? "" : "cursor-pointer"}`}
+                  key={p}
+                  onClick={() => jumpToPage(p)}
+                  className={`px-3 py-1 text-sm rounded cursor-pointer transition-colors ${
+                    p === currentPage
+                      ? "bg-sidebar-primary text-white font-semibold"
+                      : "border border-pill-ring text-pill-fg hover:bg-muted"
+                  }`}
                 >
-                  Next
+                  {p}
                 </button>
-              </div>
-            </>
+              ))}
+
+              <button
+                onClick={onNext}
+                disabled={!canNext}
+                className={`px-2 py-1 text-sm disabled:opacity-50 font-semibold hover:underline ${!canNext ? "" : "cursor-pointer"}`}
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       )}

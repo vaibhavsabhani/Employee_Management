@@ -5,16 +5,18 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../notification/notification.service';
 
 import { CreateTimeEntryDto } from './dto/create-time-entry.dto';
 import { GetTimeEntryDto } from './dto/get-time-entry.dto';
-import { UpdateTimeEntryStatusDto } from './dto/update-time-entry-status.dto';
 import { UpdateTimeEntryDto } from './dto/update-time-entry.dto';
+import { UpdateTimeEntryStatusDto } from './dto/update-time-entry-status.dto';
 
 @Injectable()
 export class TimeEntryService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   private parseTimeToMinutes(
@@ -89,8 +91,26 @@ export class TimeEntryService {
         },
         include: {
           status: true,
+          employee: { select: { firstName: true, lastName: true } },
         },
       });
+
+    const emp = (timeEntry as any).employee;
+    const empName = emp
+      ? `${emp.firstName} ${emp.lastName}`
+      : 'An employee';
+    const dateLabel = new Date(date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    this.notificationService.notifyAllAdmins(
+      'New Time Entry Submitted',
+      `${empName} submitted a time entry for ${dateLabel}.`,
+      'time_entry_submitted',
+      { timeEntryId: timeEntry.id },
+    );
 
     return {
       success: true,
@@ -108,6 +128,8 @@ export class TimeEntryService {
       page = '1',
       limit = '10',
       statusId,
+      startDate,
+      endDate,
     } = query;
 
     const skip =
@@ -122,6 +144,18 @@ export class TimeEntryService {
     if (statusId) {
       where.statusId =
         Number(statusId);
+    }
+
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        where.date.lte = end;
+      }
     }
 
     const [entries, total] =
@@ -228,6 +262,10 @@ export class TimeEntryService {
       limit = '10',
       employeeId,
       statusId,
+      employeeName,
+      employeeEmail,
+      startDate,
+      endDate,
     } = query;
 
     const skip =
@@ -239,13 +277,36 @@ export class TimeEntryService {
     };
 
     if (employeeId) {
-      where.employeeId =
-        employeeId;
+      where.employeeId = employeeId;
     }
 
     if (statusId) {
-      where.statusId =
-        Number(statusId);
+      where.statusId = Number(statusId);
+    }
+
+    if (employeeName || employeeEmail) {
+      where.employee = {};
+      if (employeeName) {
+        where.employee.OR = [
+          { firstName: { contains: employeeName, mode: 'insensitive' } },
+          { lastName: { contains: employeeName, mode: 'insensitive' } },
+        ];
+      }
+      if (employeeEmail) {
+        where.employee.email = { contains: employeeEmail, mode: 'insensitive' };
+      }
+    }
+
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        where.date.lte = end;
+      }
     }
 
     const [entries, total] =
@@ -312,6 +373,98 @@ export class TimeEntryService {
     };
   }
 
+  async findOne(id: string, employeeId: string) {
+    const entry = await this.prisma.timeEntry.findFirst({
+      where: { id, employeeId, isActive: true },
+      include: { status: true },
+    });
+
+    if (!entry) {
+      throw new NotFoundException('Time entry not found');
+    }
+
+    return { success: true, data: entry };
+  }
+
+  async resubmit(
+    id: string,
+    employeeId: string,
+    dto: UpdateTimeEntryDto,
+  ) {
+    const entry = await this.prisma.timeEntry.findFirst({
+      where: { id, employeeId, isActive: true },
+    });
+
+    if (!entry) {
+      throw new NotFoundException('Time entry not found');
+    }
+
+    if (entry.statusId !== 3) {
+      throw new BadRequestException(
+        'Only rejected time entries can be resubmitted',
+      );
+    }
+
+    const {
+      date,
+      startTime = entry.startTime,
+      endTime = entry.endTime,
+      breakDuration = entry.breakDuration,
+      notes,
+    } = dto;
+
+    const startMinutes = this.parseTimeToMinutes(startTime);
+    let endMinutes = this.parseTimeToMinutes(endTime);
+    if (endMinutes < startMinutes) endMinutes += 24 * 60;
+    const duration = endMinutes - startMinutes - (breakDuration ?? 0);
+
+    if (duration < 0) {
+      throw new BadRequestException(
+        'Break duration cannot exceed total work duration',
+      );
+    }
+
+    const updated = await this.prisma.timeEntry.update({
+      where: { id },
+      data: {
+        date: date ? new Date(date) : entry.date,
+        startTime,
+        endTime,
+        breakDuration: breakDuration ?? entry.breakDuration,
+        notes,
+        duration,
+        statusId: 1,
+        rejectionReason: null,
+        approvedById: null,
+      },
+      include: {
+        status: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    const emp = (updated as any).employee;
+    const empName = emp ? `${emp.firstName} ${emp.lastName}` : 'An employee';
+    const dateLabel = new Date(updated.date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    this.notificationService.notifyAllAdmins(
+      'Time Entry Resubmitted',
+      `${empName} resubmitted a time entry for ${dateLabel}.`,
+      'time_entry_resubmitted',
+      { timeEntryId: updated.id },
+    );
+
+    return {
+      success: true,
+      message: 'Time entry resubmitted successfully',
+      data: updated,
+    };
+  }
+
   async updateStatus(
     id: string,
     adminId: string,
@@ -368,6 +521,35 @@ export class TimeEntryService {
           status: true,
         },
       });
+
+    const dateLabel = new Date(
+      updatedEntry.date,
+    ).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    if (dto.statusId === 2) {
+      this.notificationService.create(
+        updatedEntry.employeeId,
+        'Time Entry Approved',
+        `Your time entry for ${dateLabel} has been approved.`,
+        'time_entry_approved',
+        { timeEntryId: updatedEntry.id },
+      );
+    } else if (dto.statusId === 3) {
+      const reason = dto.rejectionReason
+        ? ` Reason: ${dto.rejectionReason}`
+        : '';
+      this.notificationService.create(
+        updatedEntry.employeeId,
+        'Time Entry Rejected',
+        `Your time entry for ${dateLabel} has been rejected.${reason}`,
+        'time_entry_rejected',
+        { timeEntryId: updatedEntry.id },
+      );
+    }
 
     return {
       success: true,

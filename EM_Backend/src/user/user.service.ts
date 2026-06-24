@@ -11,6 +11,7 @@ import { MailService } from '../mail/mail.service';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { GetUsersDto } from './dto/get-users.dto';
 
 @Injectable()
@@ -102,21 +103,33 @@ export class UserService {
       offset = '0',
       limit = '10',
       search = '',
+      email,
       role,
+      isActive,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = query;
 
     const skip = Number(offset);
 
-    const where: any = {
-      isActive: true,
-    };
+    const where: any = {};
+
+    if (isActive === 'false') {
+      where.isActive = false;
+    } else if (isActive === 'all') {
+      // no isActive constraint — return all
+    } else {
+      where.isActive = true;
+    }
 
     if (role) {
       where.role = {
         name: role.toLowerCase().trim(),
       };
+    }
+
+    if (email) {
+      where.email = { contains: email, mode: 'insensitive' };
     }
 
     if (search) {
@@ -206,6 +219,28 @@ export class UserService {
       success: true,
       user: userResponse,
     };
+  }
+
+  async updateProfile(id: string, dto: UpdateProfileDto) {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('User not found');
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(dto.firstName && { firstName: dto.firstName.trim() }),
+        ...(dto.middleName !== undefined && { middleName: dto.middleName?.trim() || null }),
+        ...(dto.lastName && { lastName: dto.lastName.trim() }),
+        ...(dto.phoneNumber !== undefined && { phoneNumber: dto.phoneNumber || null }),
+        ...(dto.address !== undefined && { address: dto.address?.trim() || null }),
+        ...(dto.panNumber !== undefined && { panNumber: dto.panNumber?.toUpperCase() || null }),
+        ...(dto.aadhaarNumber !== undefined && { aadhaarNumber: dto.aadhaarNumber || null }),
+      },
+      include: { role: true },
+    });
+
+    const { password, ...userResponse } = updated;
+    return { success: true, message: 'Profile updated successfully', user: userResponse };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

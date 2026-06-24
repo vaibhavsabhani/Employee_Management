@@ -109,6 +109,14 @@ export const employeeApi = createApi({
         method: "DELETE",
       }),
     }),
+
+    getMyProfile: builder.query({
+      query: () => ({ url: "/user/me", method: "GET" }),
+    }),
+
+    updateMyProfile: builder.mutation({
+      query: (body) => ({ url: "/user/me", method: "PATCH", body }),
+    }),
   }),
 });
 
@@ -119,4 +127,6 @@ export const {
   useGetSingleEmployeeMutation,
   useEditEmployeeMutation,
   useDeleteEmployeeMutation,
+  useLazyGetMyProfileQuery,
+  useUpdateMyProfileMutation,
 } = employeeApi;

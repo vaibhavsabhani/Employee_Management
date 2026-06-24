@@ -13,6 +13,9 @@ import { PrismaService } from '../prisma/prisma.service';
 
 import { LoginDto } from './dto/login.dto';
 import { MailService } from '@/mail/mail.service';
+import { UAParser } from 'ua-parser-js';
+import * as geoip from 'geoip-lite';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +25,39 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  async login(loginDto: LoginDto) {
+  private extractIp(req: Request): string {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) {
+      return (Array.isArray(forwarded) ? forwarded[0] : forwarded)
+        .split(',')[0]
+        .trim();
+    }
+    return req.socket?.remoteAddress ?? '127.0.0.1';
+  }
+
+  private parseAgent(ua: string) {
+    const parser = new UAParser(ua);
+    const b = parser.getBrowser();
+    const o = parser.getOS();
+    const d = parser.getDevice();
+    return {
+      browser: [b.name, b.version].filter(Boolean).join(' ') || null,
+      os: [o.name, o.version].filter(Boolean).join(' ') || null,
+      device: d.type ?? 'Desktop',
+    };
+  }
+
+  private getGeo(ip: string) {
+    try {
+      const geo = geoip.lookup(ip);
+      if (!geo) return { country: null, city: null, region: null };
+      return { country: geo.country ?? null, city: geo.city ?? null, region: geo.region ?? null };
+    } catch {
+      return { country: null, city: null, region: null };
+    }
+  }
+
+  async login(loginDto: LoginDto, req: Request) {
     const { email, password } = loginDto;
 
     const user = await this.prisma.user.findUnique({
@@ -52,6 +87,27 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload);
 
+    // Log login activity
+    const ip = this.extractIp(req);
+    const ua = (req.headers['user-agent'] as string) ?? '';
+    const { browser, os, device } = this.parseAgent(ua);
+    const { country, city, region } = this.getGeo(ip);
+
+    await this.prisma.userActivityLog.create({
+      data: {
+        userId: user.id,
+        action: 'LOGIN',
+        ipAddress: ip,
+        userAgent: ua || null,
+        browser,
+        os,
+        device,
+        country,
+        city,
+        region,
+      },
+    });
+
     const { password: _, ...userResponse } = user;
 
     return {
@@ -62,7 +118,19 @@ export class AuthService {
     };
   }
 
-  async logout() {
+  async logout(userId: string) {
+    const latestLog = await this.prisma.userActivityLog.findFirst({
+      where: { userId, action: 'LOGIN', logoutAt: null },
+      orderBy: { loginAt: 'desc' },
+    });
+
+    if (latestLog) {
+      await this.prisma.userActivityLog.update({
+        where: { id: latestLog.id },
+        data: { logoutAt: new Date(), action: 'LOGOUT' },
+      });
+    }
+
     return {
       success: true,
       message: 'Logout successful',
@@ -118,7 +186,6 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    console.log(newPassword,"<<<newPassword");
     const tokenHash = createHash('sha256').update(token).digest('hex');
 
     const resetToken = await this.prisma.passwordResetToken.findUnique({

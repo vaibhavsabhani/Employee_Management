@@ -12,6 +12,10 @@ import {
   useDeleteEmployeeMutation,
 } from "@/src/store/action/employee/employee";
 
+import {
+  useAddTimeEntryMutation
+} from "@/src/store/action/time-entry/timeEntry";
+
 export {
   useLoginMutation,
   useAddEmployeeMutation,
@@ -21,4 +25,5 @@ export {
   useLazyGetEmployeesQuery,
   useEditEmployeeMutation,
   useDeleteEmployeeMutation,
+  useAddTimeEntryMutation
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { AvatarUpload } from "@/src/components/custom/AvatarUpload";
 import Loader from "@/src/components/custom/Loader";
 import { PageHeader } from "@/src/components/custom/PageHeader";
 import { Toast } from "@/src/components/custom/Toast";
@@ -31,7 +32,6 @@ import {
   Loader2,
   Save,
   ShieldCheck,
-  UploadCloud,
   User,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -188,21 +188,15 @@ const page = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <span className="text-sm font-medium text-slate-900 block">
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100 block">
                       Profile Picture
                     </span>
-                    <div className="flex items-center gap-6">
-                      <div className="relative flex flex-col items-center justify-center size-24 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">
-                        <UploadCloud className="size-6 mb-1" />
-                        <span className="text-[10px] font-semibold tracking-wider">
-                          UPLOAD
-                        </span>
-                      </div>
-                      <div className="text-sm text-slate-500">
-                        <p>Click to upload or drag and drop</p>
-                        <p>SVG, PNG, JPG or GIF (max. 800x800px)</p>
-                      </div>
-                    </div>
+                    <AvatarUpload
+                      value={form.watch("profilePicture") ?? ""}
+                      onChange={(url) => form.setValue("profilePicture", url, { shouldDirty: true })}
+                      firstName={form.watch("firstName")}
+                      lastName={form.watch("lastName")}
+                    />
                   </div>
                 </CardContent>
               </Card>

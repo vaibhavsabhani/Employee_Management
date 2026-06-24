@@ -55,7 +55,7 @@ const ResetPasswordPage = () => {
 
   return (
     <AuthLayout>
-      <Card className="border-white/10 bg-white/96 shadow-[0_28px_80px_rgba(2,8,23,0.42)] backdrop-blur-xl">
+      <Card className="border-white/10 bg-white/96 dark:bg-slate-900/96 shadow-[0_28px_80px_rgba(2,8,23,0.42)] backdrop-blur-xl">
         <CardHeader className="space-y-5 border-b border-slate-200/80 px-8 pb-6 pt-8 dark:border-white/10 sm:px-10">
           <div className="flex items-center gap-3 text-slate-950 dark:text-white">
             <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-700 via-blue-600 to-sky-500 text-white shadow-lg shadow-blue-950/20">

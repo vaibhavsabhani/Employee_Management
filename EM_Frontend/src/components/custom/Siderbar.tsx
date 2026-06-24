@@ -18,13 +18,16 @@ import {
   Users,
   Clock3,
   CalendarDays,
+  ClipboardList,
   Settings,
   LogOut,
   Building2,
+  ActivitySquare,
 } from "lucide-react";
 
 import { ROLES } from "@/src/constant/role";
 import { deleteCookie } from "@/src/lib/cookieStorage";
+import { useLogoutMutation } from "@/src/store/action/auth/auth";
 
 type Props = {
   pathname: string;
@@ -57,26 +60,43 @@ const navigation = [
     accessRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
   },
   {
+    label: "Attendance",
+    href: "/attendance",
+    icon: ClipboardList,
+    accessRoles: [ROLES.ADMIN],
+  },
+  {
+    label: "Activity Logs",
+    href: "/logs",
+    icon: ActivitySquare,
+    accessRoles: [ROLES.ADMIN],
+  },
+  {
     label: "Settings",
     href: "/settings",
     icon: Settings,
-    accessRoles: [ROLES.ADMIN],
+    accessRoles: [ROLES.ADMIN, ROLES.EMPLOYEE],
   },
 ];
 
 export function AppSidebar({ pathname, userRole }: Props) {
   const router = useRouter();
   const { isMobile, setOpenMobile } = useSidebar();
+  const [logoutApi] = useLogoutMutation();
 
   const visibleNavigation = navigation.filter(
     (item) => userRole && item.accessRoles.includes(userRole),
   );
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutApi().unwrap();
+    } catch {
+      // proceed regardless
+    }
     deleteCookie("accessToken");
     deleteCookie("user");
     deleteCookie("role");
-
     router.replace("/login");
   };
 

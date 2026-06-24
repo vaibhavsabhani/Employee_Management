@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req, Request } from '@nestjs/common';
 
 import {
   ApiBody,
@@ -25,16 +25,16 @@ export class AuthController {
   })
   @Public()
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    return this.authService.login(loginDto, req as any);
   }
 
   @ApiOperation({
     summary: 'Logout',
   })
   @Post('logout')
-  logout() {
-    return this.authService.logout();
+  logout(@Request() req: any) {
+    return this.authService.logout(req.user?.id);
   }
 
   @ApiOperation({

@@ -1,9 +1,20 @@
-import React from 'react'
+"use client";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
-}
+import { ROLES } from "@/src/constant/role";
+import TimeEntryPage from "./TimeEntryPage";
+import AdminTimeEntryPage from "./AdminTimeEntryPage";
+import { getCookie } from "@/src/lib/cookieStorage";
 
-export default page
+const Page = () => {
+  const role = getCookie("role");
+
+  console.log("Role:", role);
+
+  return role === ROLES.ADMIN ? (
+    <AdminTimeEntryPage />
+  ) : (
+    <TimeEntryPage />
+  );
+};
+
+export default Page;
