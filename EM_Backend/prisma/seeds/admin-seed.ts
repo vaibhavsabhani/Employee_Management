@@ -16,7 +16,7 @@ export async function seedAdmin() {
 
   const existingAdmin = await prisma.user.findUnique({
     where: {
-      email: 'vaibhavsabhani.prolix@gmail.com',
+      email: 'priyanshmoghariya1124@gmail.com',
     },
   });
 
@@ -31,7 +31,7 @@ export async function seedAdmin() {
     data: {
       firstName: 'vaibhav',
       lastName: 'sabhani',
-      email: 'vaibhavsabhani.prolix@gmail.com',
+      email: 'priyanshmoghariya1124@gmail.com',
       password: hashedPassword,
       roleId: adminRole.id,
       isActive: true,
