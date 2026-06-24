@@ -28,7 +28,7 @@ const Filter: React.FC<PageProps> = ({ children }) => {
       >
         {React.Children.map(children, (child) =>
           React.isValidElement(child)
-            ? React.cloneElement(child, { closeFilter })
+            ? React.cloneElement(child as React.ReactElement<any>, { closeFilter })
             : child
         )}
       </div>

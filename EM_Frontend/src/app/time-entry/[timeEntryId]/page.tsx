@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Clock, Loader2, Save } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 
 const Page = () => {
   const params = useParams();
@@ -42,7 +42,7 @@ const Page = () => {
   const isLoading = isAdding || isResubmitting;
 
   const form = useForm<TimeEntryFormValues>({
-    resolver: zodResolver(timeEntrySchema),
+    resolver: zodResolver(timeEntrySchema) as Resolver<TimeEntryFormValues>,
     defaultValues: {
       date: "",
       startTime: "",

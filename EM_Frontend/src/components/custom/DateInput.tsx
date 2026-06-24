@@ -183,7 +183,7 @@ import { cn } from "@/src/lib/utils";
             {label} {isRequired && <span className="text-red-500">*</span>}
           </label>
         )}
-        {renderDateInput(stringValue, onChange)}
+        {renderDateInput(stringValue ?? null, onChange!)}
       </div>
     );
   };

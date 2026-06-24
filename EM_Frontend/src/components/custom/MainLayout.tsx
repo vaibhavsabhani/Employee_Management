@@ -6,7 +6,6 @@ import { AppSidebar } from "./Siderbar";
 import { SidebarInset, SidebarProvider } from "../ui/sidebar";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/src/lib/cookieStorage";
-import { getPageTitle } from "@/src/lib/utils";
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -37,14 +36,12 @@ export function MainLayout({ children }: MainLayoutProps) {
     return <>{children}</>;
   }
 
-  const pageTitle = getPageTitle(pathname);
-
   return (
     <SidebarProvider>
-      <AppSidebar pathname={pathname} userRole={userRole} />
+      <AppSidebar pathname={pathname} userRole={userRole ?? undefined} />
 
       <SidebarInset>
-        <Header pageTitle={pageTitle} userRole={userRole} />
+        <Header userRole={userRole ?? undefined} />
 
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
           <div className="mx-auto w-full">{children}</div>
