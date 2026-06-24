@@ -17,7 +17,15 @@ export class MailService {
   }
 
   async sendMail(to: string, subject: string, html: string): Promise<void> {
-    await this.resend.emails.send({ from: this.from, to, subject, html });
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to,
+      subject,
+      html,
+    });
+    if (error) {
+      throw new Error(`Resend: ${error.message}`);
+    }
   }
 
   async sendPasswordResetEmail(
