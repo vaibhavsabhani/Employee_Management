@@ -83,11 +83,15 @@ export class UserService {
       },
     });
 
-    await this.mailService.sendEmployeeCredentialsEmail(
-      user.email,
-      `${user.firstName} ${user.lastName}`,
-      defaultPassword,
-    );
+    try {
+      await this.mailService.sendEmployeeCredentialsEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+        defaultPassword,
+      );
+    } catch (mailError) {
+      console.error('Failed to send welcome email:', mailError);
+    }
 
     const { password, ...userResponse } = user;
 

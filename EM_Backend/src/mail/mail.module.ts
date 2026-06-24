@@ -13,9 +13,13 @@ import { MailService } from './mail.service';
           host: configService.get<string>('MAIL_HOST'),
           port: Number(configService.get<string>('MAIL_PORT')),
           secure: false,
+          requireTLS: true,
           auth: {
             user: configService.get<string>('MAIL_USER'),
             pass: configService.get<string>('MAIL_PASSWORD'),
+          },
+          tls: {
+            rejectUnauthorized: false,
           },
         },
         defaults: {
