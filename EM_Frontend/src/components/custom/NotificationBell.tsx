@@ -57,6 +57,18 @@ export function NotificationBell() {
     socket.on("notification", (n: Notification) => {
       setNotifications((prev) => [n, ...prev]);
       setUnreadCount((c) => c + 1);
+      // broadcast leave events
+      if (["leave_applied", "leave_approved", "leave_rejected"].includes(n.type)) {
+        window.dispatchEvent(new CustomEvent("leave:update", { detail: { type: n.type } }));
+      }
+      // broadcast time-entry events
+      if (
+        ["time_entry_submitted", "time_entry_resubmitted", "time_entry_approved", "time_entry_rejected"].includes(
+          n.type,
+        )
+      ) {
+        window.dispatchEvent(new CustomEvent("timeentry:update", { detail: { type: n.type } }));
+      }
     });
 
     return () => {

@@ -13,6 +13,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { AlertCircle, CheckCircle2, Clock, Pencil, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
+import { useTimeEntrySocket } from "@/src/hooks/useTimeEntrySocket";
 import {
   Tooltip,
   TooltipContent,
@@ -113,9 +114,17 @@ const TimeEntryPage = () => {
     limit,
     setLimit,
     resetLimit,
+    refetch,
   } = usePaginatedQuery(fetchTimeEntries, {
     defaultFilters,
     transformResponse: transformTimeEntryResponse,
+  });
+
+  // auto-refresh when admin approves or rejects this employee's entry
+  useTimeEntrySocket((type) => {
+    if (type === "time_entry_approved" || type === "time_entry_rejected") {
+      refetch();
+    }
   });
 
   const stats = useMemo(() => {

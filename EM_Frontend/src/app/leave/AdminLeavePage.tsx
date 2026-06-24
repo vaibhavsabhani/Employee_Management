@@ -16,12 +16,13 @@ import {
   LEAVE_TYPE_OPTIONS,
 } from "@/src/constant/constant";
 import usePaginatedQuery from "@/src/hooks/usePagination";
+import { useLeaveSocket } from "@/src/hooks/useLeaveSocket";
 import {
   useLazyGetLeavesQuery,
   useUpdateLeaveStatusMutation,
 } from "@/src/store/action/leave/leave";
 import { ColumnDef } from "@tanstack/react-table";
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import {
   Select,
@@ -124,13 +125,18 @@ const AdminLeaveFilterPanel = ({
 
 const AdminLeavePage = () => {
   const [getLeaves] = useLazyGetLeavesQuery();
-  const [updateStatus, { isLoading: isUpdating }] = useUpdateLeaveStatusMutation();
+  const [updateStatus] = useUpdateLeaveStatusMutation();
+
+  // per-row loading: tracks which leaveId is currently being actioned
+  const [rowLoading, setRowLoading] = useState<Record<string, "approve" | "reject" | null>>({});
 
   const [rejectDialog, setRejectDialog] = useState<{ open: boolean; leaveId: string | null }>({
     open: false,
     leaveId: null,
   });
   const [rejectionReason, setRejectionReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
+
   const [draft, setDraft] = useState<DraftFilters>({
     employeeName: "",
     employeeEmail: "",
@@ -155,6 +161,13 @@ const AdminLeavePage = () => {
     updateFilters, filters, totalPages, total, limit, setLimit, resetLimit, refetch,
   } = usePaginatedQuery(fetchLeaves, { defaultFilters, transformResponse });
 
+  // auto-refresh table when a new leave request arrives via socket
+  useLeaveSocket((type) => {
+    if (type === "leave_applied") {
+      refetch();
+    }
+  });
+
   const activeStatus = (filters as any)?.statusId ?? "";
 
   const handleApply = () => { resetLimit(); updateFilters({ ...(filters as any), ...draft }); };
@@ -165,12 +178,15 @@ const AdminLeavePage = () => {
   };
 
   const handleApprove = async (id: string) => {
+    setRowLoading((prev) => ({ ...prev, [id]: "approve" }));
     try {
       const res = await updateStatus({ id, statusId: 2 }).unwrap();
       Toast(res);
       refetch();
     } catch (err: any) {
       Toast({ error: err }, "error");
+    } finally {
+      setRowLoading((prev) => ({ ...prev, [id]: null }));
     }
   };
 
@@ -181,9 +197,12 @@ const AdminLeavePage = () => {
 
   const handleReject = async () => {
     if (!rejectDialog.leaveId) return;
+    const id = rejectDialog.leaveId;
+    setIsRejecting(true);
+    setRowLoading((prev) => ({ ...prev, [id]: "reject" }));
     try {
       const res = await updateStatus({
-        id: rejectDialog.leaveId,
+        id,
         statusId: 3,
         rejectionReason: rejectionReason.trim() || undefined,
       }).unwrap();
@@ -192,6 +211,9 @@ const AdminLeavePage = () => {
       refetch();
     } catch (err: any) {
       Toast({ error: err }, "error");
+    } finally {
+      setIsRejecting(false);
+      setRowLoading((prev) => ({ ...prev, [id]: null }));
     }
   };
 
@@ -262,30 +284,45 @@ const AdminLeavePage = () => {
       },
     },
     {
-      accessorKey: "actions",
+      id: "actions",
       header: "Actions",
+      minSize: 200,
       cell: ({ row }) => {
         const sid: number = row.original.statusId;
+        const id: string = row.original.id;
+        const rowState = rowLoading[id];
+
         if (sid !== 1) return <span className="text-xs text-slate-400 dark:text-slate-500">—</span>;
+
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 flex-nowrap">
             <Button
               size="sm"
               variant="outline"
-              className="h-7 px-2.5 text-xs border-btn-approve-ring text-btn-approve-fg hover:bg-btn-approve-hover"
-              onClick={() => handleApprove(row.original.id)}
+              disabled={!!rowState}
+              className="h-7 px-2.5 text-xs border-btn-approve-ring text-btn-approve-fg hover:bg-btn-approve-hover shrink-0"
+              onClick={() => handleApprove(id)}
             >
-              <CheckCircle2 className="size-3.5 mr-1" />
-              Approve
+              {rowState === "approve" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="size-3.5 mr-1" />
+              )}
+              {rowState === "approve" ? "Approving…" : "Approve"}
             </Button>
             <Button
               size="sm"
               variant="outline"
-              className="h-7 px-2.5 text-xs border-btn-reject-ring text-btn-reject-fg hover:bg-btn-reject-hover"
-              onClick={() => openRejectDialog(row.original.id)}
+              disabled={!!rowState}
+              className="h-7 px-2.5 text-xs border-btn-reject-ring text-btn-reject-fg hover:bg-btn-reject-hover shrink-0"
+              onClick={() => openRejectDialog(id)}
             >
-              <XCircle className="size-3.5 mr-1" />
-              Reject
+              {rowState === "reject" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <XCircle className="size-3.5 mr-1" />
+              )}
+              {rowState === "reject" ? "Rejecting…" : "Reject"}
             </Button>
           </div>
         );
@@ -309,7 +346,7 @@ const AdminLeavePage = () => {
           <button
             key={tab.value}
             onClick={() => { resetLimit(); updateFilters({ ...(filters as any), statusId: tab.value }); }}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+            className={`cursor-pointer px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
               activeStatus === tab.value
                 ? "bg-sidebar-primary text-white border-sidebar-primary"
                 : "bg-pill-bg text-pill-fg border-pill-ring hover:border-violet-400 hover:text-violet-700"
@@ -344,10 +381,10 @@ const AdminLeavePage = () => {
         title="Reject Leave Request?"
         description="This will mark the leave as Rejected. You can optionally provide a reason below."
         icon={<AlertTriangle className="size-5" />}
-        confirmLabel={isUpdating ? "Rejecting..." : "Yes, Reject"}
+        confirmLabel={isRejecting ? "Rejecting..." : "Yes, Reject"}
         cancelLabel="Cancel"
         variant="destructive"
-        isLoading={isUpdating}
+        isLoading={isRejecting}
         onConfirm={handleReject}
       >
         <Textarea

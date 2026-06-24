@@ -16,8 +16,9 @@ import {
 } from "@/src/store/action/time-entry/timeEntry";
 import { ColumnDef } from "@tanstack/react-table";
 import { Input } from "@/src/components/ui/input";
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTimeEntrySocket } from "@/src/hooks/useTimeEntrySocket";
 
 const fmtMins = (mins: number) => `${(mins / 60).toFixed(1)}h`;
 
@@ -101,8 +102,11 @@ const AdminFilterPanel = ({
 
 const AdminTimeEntryPage = () => {
   const [getTimeEntries] = useLazyGetTimeEntriesQuery();
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateTimeEntryStatusMutation();
+  const [updateStatus] = useUpdateTimeEntryStatusMutation();
+
+  // per-row loading: tracks which entryId is being actioned
+  const [rowLoading, setRowLoading] = useState<Record<string, "approve" | "reject" | null>>({});
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const [rejectDialog, setRejectDialog] = useState<{
     open: boolean;
@@ -152,6 +156,13 @@ const AdminTimeEntryPage = () => {
     transformResponse,
   });
 
+  // auto-refresh when employee submits or resubmits a time entry
+  useTimeEntrySocket((type) => {
+    if (type === "time_entry_submitted" || type === "time_entry_resubmitted") {
+      refetch();
+    }
+  });
+
   const activeStatus = (filters as any)?.statusId ?? "";
 
   const handleApplyFilter = () => {
@@ -166,12 +177,15 @@ const AdminTimeEntryPage = () => {
   };
 
   const handleApprove = async (id: string) => {
+    setRowLoading((prev) => ({ ...prev, [id]: "approve" }));
     try {
       const res = await updateStatus({ id, statusId: 2 }).unwrap();
       Toast(res);
       refetch();
     } catch (err: any) {
       Toast({ error: err }, "error");
+    } finally {
+      setRowLoading((prev) => ({ ...prev, [id]: null }));
     }
   };
 
@@ -182,9 +196,12 @@ const AdminTimeEntryPage = () => {
 
   const handleReject = async () => {
     if (!rejectDialog.entryId) return;
+    const id = rejectDialog.entryId;
+    setIsRejecting(true);
+    setRowLoading((prev) => ({ ...prev, [id]: "reject" }));
     try {
       const res = await updateStatus({
-        id: rejectDialog.entryId,
+        id,
         statusId: 3,
         rejectionReason: rejectionReason.trim() || undefined,
       }).unwrap();
@@ -193,6 +210,9 @@ const AdminTimeEntryPage = () => {
       refetch();
     } catch (err: any) {
       Toast({ error: err }, "error");
+    } finally {
+      setIsRejecting(false);
+      setRowLoading((prev) => ({ ...prev, [id]: null }));
     }
   };
 
@@ -264,30 +284,44 @@ const AdminTimeEntryPage = () => {
       },
     },
     {
-      accessorKey: "actions",
+      id: "actions",
       header: "Actions",
+      minSize: 200,
       cell: ({ row }) => {
         const sid: number = row.original.statusId;
+        const id: string = row.original.id;
+        const rowState = rowLoading[id];
+
         if (sid !== 1) return <span className="text-xs text-slate-400 dark:text-slate-500">—</span>;
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 flex-nowrap">
             <Button
               size="sm"
               variant="outline"
-              className="h-7 px-2.5 text-xs border-btn-approve-ring text-btn-approve-fg hover:bg-btn-approve-hover"
-              onClick={() => handleApprove(row.original.id)}
+              disabled={!!rowState}
+              className="h-7 px-2.5 text-xs border-btn-approve-ring text-btn-approve-fg hover:bg-btn-approve-hover shrink-0"
+              onClick={() => handleApprove(id)}
             >
-              <CheckCircle2 className="size-3.5 mr-1" />
-              Approve
+              {rowState === "approve" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="size-3.5 mr-1" />
+              )}
+              {rowState === "approve" ? "Approving…" : "Approve"}
             </Button>
             <Button
               size="sm"
               variant="outline"
-              className="h-7 px-2.5 text-xs border-btn-reject-ring text-btn-reject-fg hover:bg-btn-reject-hover"
-              onClick={() => openRejectDialog(row.original.id)}
+              disabled={!!rowState}
+              className="h-7 px-2.5 text-xs border-btn-reject-ring text-btn-reject-fg hover:bg-btn-reject-hover shrink-0"
+              onClick={() => openRejectDialog(id)}
             >
-              <XCircle className="size-3.5 mr-1" />
-              Reject
+              {rowState === "reject" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <XCircle className="size-3.5 mr-1" />
+              )}
+              {rowState === "reject" ? "Rejecting…" : "Reject"}
             </Button>
           </div>
         );
@@ -356,10 +390,10 @@ const AdminTimeEntryPage = () => {
         title="Reject Time Entry?"
         description="This action will mark the entry as Rejected. The employee will be notified. You can optionally provide a reason below."
         icon={<AlertTriangle className="size-5" />}
-        confirmLabel={isUpdating ? "Rejecting..." : "Yes, Reject"}
+        confirmLabel={isRejecting ? "Rejecting..." : "Yes, Reject"}
         cancelLabel="Cancel"
         variant="destructive"
-        isLoading={isUpdating}
+        isLoading={isRejecting}
         onConfirm={handleReject}
       >
         <Textarea

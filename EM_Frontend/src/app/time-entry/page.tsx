@@ -1,14 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ROLES } from "@/src/constant/role";
+import { getCookie } from "@/src/lib/cookieStorage";
 import TimeEntryPage from "./TimeEntryPage";
 import AdminTimeEntryPage from "./AdminTimeEntryPage";
-import { getCookie } from "@/src/lib/cookieStorage";
 
 const Page = () => {
-  const role = getCookie("role");
+  const [role, setRole] = useState<string | null>(null);
 
-  console.log("Role:", role);
+  useEffect(() => {
+    setRole(getCookie("role") ?? "");
+  }, []);
+
+  if (role === null) return null;
 
   return role === ROLES.ADMIN ? (
     <AdminTimeEntryPage />

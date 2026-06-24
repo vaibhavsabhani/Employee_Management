@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { useRouter } from "next/navigation";
+import { useLeaveSocket } from "@/src/hooks/useLeaveSocket";
 
 type DraftFilters = { leaveTypeId: string; startDate: string; endDate: string };
 const defaultFilters = { statusId: "", leaveTypeId: "", startDate: "", endDate: "" };
@@ -105,8 +106,15 @@ const LeavePage = () => {
 
   const {
     data, loading, page, nextPage, prevPage, canNext, canPrev,
-    updateFilters, filters, totalPages, total, limit, setLimit, resetLimit,
+    updateFilters, filters, totalPages, total, limit, setLimit, resetLimit, refetch,
   } = usePaginatedQuery(fetchLeaves, { defaultFilters, transformResponse });
+
+  // auto-refresh when admin approves or rejects a leave
+  useLeaveSocket((type) => {
+    if (type === "leave_approved" || type === "leave_rejected") {
+      refetch();
+    }
+  });
 
   const stats = useMemo(() => {
     const pending = data?.filter((l: any) => l.statusId === 1).length ?? 0;

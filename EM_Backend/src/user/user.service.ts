@@ -266,17 +266,21 @@ export class UserService {
     }
 
     const updatedUser = await this.prisma.user.update({
-      where: {
-        id,
-      },
+      where: { id },
       data: {
-        ...rest,
+        ...(rest.firstName !== undefined && { firstName: rest.firstName }),
+        ...(rest.middleName !== undefined && { middleName: rest.middleName }),
+        ...(rest.lastName !== undefined && { lastName: rest.lastName }),
+        ...(rest.email && { email: rest.email.toLowerCase().trim() }),
+        ...(rest.phoneNumber !== undefined && { phoneNumber: rest.phoneNumber }),
+        ...(rest.profilePicture !== undefined && { profilePicture: rest.profilePicture }),
+        ...(rest.address !== undefined && { address: rest.address }),
+        ...(rest.panNumber !== undefined && { panNumber: rest.panNumber }),
+        ...(rest.aadhaarNumber !== undefined && { aadhaarNumber: rest.aadhaarNumber }),
+        ...(rest.isActive !== undefined && { isActive: rest.isActive }),
         ...(roleId && { roleId }),
-        email: rest.email?.toLowerCase().trim(),
       },
-      include: {
-        role: true,
-      },
+      include: { role: true },
     });
 
     const { password, ...userResponse } = updatedUser;

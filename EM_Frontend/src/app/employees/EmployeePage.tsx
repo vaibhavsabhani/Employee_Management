@@ -292,36 +292,34 @@ const EmployeePage = () => {
     {
       id: "actions",
       header: "Actions",
+      minSize: 210,
       cell: ({ row }) => {
         const emp: Employee = row.original;
         return (
-          <div className="flex gap-1.5">
-            {/* View */}
+          <div className="flex items-center gap-1.5 flex-nowrap">
             <Button
               size="sm"
               variant="outline"
-              className="h-7 px-2.5 text-xs gap-1"
+              className="h-7 px-2.5 text-xs gap-1 shrink-0"
               onClick={() => setViewEmployee(emp)}
             >
               <Eye className="size-3" />
               View
             </Button>
 
-            {/* Edit */}
             <Button
               size="sm"
-              className="h-7 px-2.5 text-xs gap-1"
+              className="h-7 px-2.5 text-xs gap-1 shrink-0"
               onClick={() => router.push(`/employees/${emp.id}`)}
             >
               <Pencil className="size-3" />
               Edit
             </Button>
 
-            {/* Delete (deactivate) */}
             <Button
               size="sm"
               variant="destructive"
-              className="h-7 px-2.5 text-xs gap-1"
+              className="h-7 px-2.5 text-xs gap-1 shrink-0"
               onClick={() => setDeleteTarget(emp)}
             >
               <Trash2 className="size-3" />
