@@ -10,8 +10,7 @@ export const timeEntrySchema = z
 
     breakDuration: z.coerce
       .number()
-      .min(0, "Break duration cannot be negative")
-      .default(0),
+      .min(0, "Break duration cannot be negative"),
 
     notes: z
       .string()
@@ -28,7 +27,7 @@ export const timeEntrySchema = z
     {
       message: "End time must be greater than start time",
       path: ["endTime"],
-    }
+    },
   );
 
 export type TimeEntryFormValues = z.infer<typeof timeEntrySchema>;
