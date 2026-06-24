@@ -17,7 +17,7 @@ import {
 } from "@/src/store/action/employee/employee";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save, UserCircle } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -44,6 +44,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProfilePage() {
   const [fetchProfile] = useLazyGetMyProfileQuery();
   const [updateProfile, { isLoading }] = useUpdateMyProfileMutation();
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -81,6 +82,7 @@ export default function ProfilePage() {
           _email: u.email,
           _role: u.role?.name,
         } as any);
+        setProfilePicture(u.profilePicture ?? null);
       })
       .catch(() => {});
   }, [fetchProfile, reset]);
@@ -115,8 +117,12 @@ export default function ProfilePage() {
       {/* Avatar strip */}
       <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
         <CardContent className="p-6 flex items-center gap-5">
-          <div className="h-16 w-16 rounded-full bg-blue-900 flex items-center justify-center text-white text-2xl font-bold shrink-0">
-            {initials || <UserCircle className="size-8" />}
+          <div className="h-16 w-16 rounded-full bg-blue-900 flex items-center justify-center text-white text-2xl font-bold shrink-0 overflow-hidden">
+            {profilePicture ? (
+              <img src={profilePicture} alt="Profile" className="size-full object-cover" />
+            ) : (
+              initials || <UserCircle className="size-8" />
+            )}
           </div>
           <div>
             <p className="text-base font-semibold text-foreground">

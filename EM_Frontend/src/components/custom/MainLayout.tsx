@@ -6,6 +6,7 @@ import { AppSidebar } from "./Siderbar";
 import { SidebarInset, SidebarProvider } from "../ui/sidebar";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/src/lib/cookieStorage";
+import { useGetMyProfileQuery } from "@/src/store/action/employee/employee";
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -32,6 +33,11 @@ export function MainLayout({ children }: MainLayoutProps) {
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 
+  const { data: profileData } = useGetMyProfileQuery(undefined, { skip: isAuthRoute });
+  const user = (profileData as any)?.user;
+  const userName = user ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() : undefined;
+  const profilePicture: string | undefined = user?.profilePicture ?? undefined;
+
   if (isAuthRoute) {
     return <>{children}</>;
   }
@@ -41,7 +47,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       <AppSidebar pathname={pathname} userRole={userRole ?? undefined} />
 
       <SidebarInset>
-        <Header userRole={userRole ?? undefined} />
+        <Header userRole={userRole ?? undefined} userName={userName} profilePicture={profilePicture} />
 
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
           <div className="mx-auto w-full">{children}</div>

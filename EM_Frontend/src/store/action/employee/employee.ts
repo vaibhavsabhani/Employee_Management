@@ -128,5 +128,6 @@ export const {
   useEditEmployeeMutation,
   useDeleteEmployeeMutation,
   useLazyGetMyProfileQuery,
+  useGetMyProfileQuery,
   useUpdateMyProfileMutation,
 } = employeeApi;

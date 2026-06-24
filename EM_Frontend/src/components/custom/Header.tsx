@@ -17,9 +17,10 @@ import { NotificationBell } from "./NotificationBell";
 type HeaderProps = {
   userName?: string;
   userRole?: string;
+  profilePicture?: string;
 };
 
-export function Header({ userName = "Admin", userRole }: HeaderProps) {
+export function Header({ userName = "Admin", userRole, profilePicture }: HeaderProps) {
   const pathname = usePathname();
   const crumbs = getBreadcrumbs(pathname);
 
@@ -71,9 +72,9 @@ export function Header({ userName = "Admin", userRole }: HeaderProps) {
 
           <Link href="/profile" className="flex items-center gap-3 group">
             <Avatar className="h-10 w-10 border group-hover:ring-2 group-hover:ring-violet-400 transition-all">
-              <AvatarImage src="" />
+              <AvatarImage src={profilePicture ?? ""} className="object-cover" />
               <AvatarFallback className="bg-blue-900 text-white">
-                {userName.charAt(0)}
+                {userName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
