@@ -3,7 +3,19 @@
 import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2, UserX, Mail, Phone, MapPin, CreditCard, Fingerprint, CalendarDays, Search } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  UserX,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard,
+  Fingerprint,
+  CalendarDays,
+  Search,
+} from "lucide-react";
 
 import usePaginatedQuery from "@/src/hooks/usePagination";
 import {
@@ -49,13 +61,30 @@ function initials(emp: Pick<Employee, "firstName" | "lastName">) {
     .toUpperCase();
 }
 
-function Avatar({ emp, size = "md" }: { emp: Pick<Employee, "firstName" | "lastName" | "profilePicture">; size?: "sm" | "md" | "lg" }) {
-  const sizeClass = size === "sm" ? "size-8 text-xs" : size === "lg" ? "size-16 text-2xl" : "size-10 text-sm";
+function Avatar({
+  emp,
+  size = "md",
+}: {
+  emp: Pick<Employee, "firstName" | "lastName" | "profilePicture">;
+  size?: "sm" | "md" | "lg";
+}) {
+  const sizeClass =
+    size === "sm"
+      ? "size-8 text-xs"
+      : size === "lg"
+        ? "size-16 text-2xl"
+        : "size-10 text-sm";
   const ini = initials(emp);
   return (
-    <div className={`${sizeClass} rounded-full overflow-hidden bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-violet-700 dark:text-violet-300 font-bold shrink-0`}>
+    <div
+      className={`${sizeClass} rounded-full overflow-hidden bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-violet-700 dark:text-violet-300 font-bold shrink-0`}
+    >
       {emp.profilePicture ? (
-        <img src={emp.profilePicture} alt={ini} className="size-full object-cover" />
+        <img
+          src={emp.profilePicture}
+          alt={ini}
+          className="size-full object-cover"
+        />
       ) : (
         ini
       )}
@@ -115,7 +144,9 @@ const EmployeeFilterPanel = ({
   <div className="flex flex-col xl:flex-row xl:items-end gap-4 p-3 w-full">
     {/* Name search */}
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Search by Name</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Search by Name
+      </label>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -129,7 +160,9 @@ const EmployeeFilterPanel = ({
 
     {/* Email search */}
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Search by Email</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Search by Email
+      </label>
       <div className="relative">
         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -142,7 +175,7 @@ const EmployeeFilterPanel = ({
     </div>
 
     {/* Status toggle */}
-    <div className="shrink-0">
+    {/* <div className="shrink-0">
       <label className="block text-sm font-semibold mb-1.5">Status</label>
       <div className="flex rounded-md overflow-hidden border border-border">
         {STATUS_TABS.map((tab) => (
@@ -160,7 +193,7 @@ const EmployeeFilterPanel = ({
           </button>
         ))}
       </div>
-    </div>
+    </div> */}
 
     {/* Buttons */}
     <div className="flex gap-3 shrink-0 xl:pb-0 pb-1">
@@ -189,7 +222,8 @@ const defaultEmployeeFilters = { search: "", email: "", isActive: "true" };
 const EmployeePage = () => {
   const router = useRouter();
   const [getEmployees] = useLazyGetEmployeesQuery();
-  const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation();
+  const [deleteEmployee, { isLoading: isDeleting }] =
+    useDeleteEmployeeMutation();
 
   const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
@@ -208,9 +242,21 @@ const EmployeePage = () => {
   );
 
   const {
-    data, loading, page, nextPage, prevPage,
-    canNext, canPrev, updateFilters, filters, totalPages,
-    total, limit, setLimit, resetLimit, refetch,
+    data,
+    loading,
+    page,
+    nextPage,
+    prevPage,
+    canNext,
+    canPrev,
+    updateFilters,
+    filters,
+    totalPages,
+    total,
+    limit,
+    setLimit,
+    resetLimit,
+    refetch,
   } = usePaginatedQuery(fetchEmployeeData, {
     defaultFilters: defaultEmployeeFilters,
     transformResponse: transformEmployeeResponse,
@@ -255,7 +301,9 @@ const EmployeePage = () => {
           <div className="flex items-center gap-2.5 min-w-0">
             <Avatar emp={emp} size="sm" />
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate">{emp.firstName} {emp.lastName}</p>
+              <p className="text-sm font-medium truncate">
+                {emp.firstName} {emp.lastName}
+              </p>
             </div>
           </div>
         );
@@ -393,14 +441,20 @@ const EmployeePage = () => {
       />
 
       {/* ── View Dialog ─────────────────────────────────── */}
-      <Dialog open={!!viewEmployee} onOpenChange={(o) => !o && setViewEmployee(null)}>
+      <Dialog
+        open={!!viewEmployee}
+        onOpenChange={(o) => !o && setViewEmployee(null)}
+      >
         <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-
           {/* Coloured header */}
           <div className="bg-linear-to-br from-violet-600 to-violet-800 px-6 pt-8 pb-12 flex flex-col items-center gap-3">
             <div className="h-16 w-16 rounded-full ring-4 ring-white/30 overflow-hidden">
               {viewEmployee?.profilePicture ? (
-                <img src={viewEmployee.profilePicture} alt={initials(viewEmployee)} className="size-full object-cover" />
+                <img
+                  src={viewEmployee.profilePicture}
+                  alt={initials(viewEmployee)}
+                  className="size-full object-cover"
+                />
               ) : (
                 <div className="size-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold backdrop-blur-sm">
                   {viewEmployee ? initials(viewEmployee) : ""}
@@ -409,7 +463,11 @@ const EmployeePage = () => {
             </div>
             <div className="text-center">
               <DialogTitle className="text-lg font-bold text-white">
-                {[viewEmployee?.firstName, viewEmployee?.middleName, viewEmployee?.lastName]
+                {[
+                  viewEmployee?.firstName,
+                  viewEmployee?.middleName,
+                  viewEmployee?.lastName,
+                ]
                   .filter(Boolean)
                   .join(" ")}
               </DialogTitle>
@@ -432,21 +490,40 @@ const EmployeePage = () => {
 
           {/* Details card pulled up */}
           <div className="-mt-6 rounded-t-3xl bg-popover px-6 pt-5 pb-2">
-            <DetailRow icon={Mail}        label="Email"          value={viewEmployee?.email} />
-            <DetailRow icon={Phone}       label="Phone Number"   value={viewEmployee?.phoneNumber} />
-            <DetailRow icon={CreditCard}  label="PAN Number"     value={viewEmployee?.panNumber} />
-            <DetailRow icon={Fingerprint} label="Aadhaar Number" value={viewEmployee?.aadhaarNumber} />
-            <DetailRow icon={MapPin}      label="Address"        value={viewEmployee?.address} />
+            <DetailRow icon={Mail} label="Email" value={viewEmployee?.email} />
+            <DetailRow
+              icon={Phone}
+              label="Phone Number"
+              value={viewEmployee?.phoneNumber}
+            />
+            <DetailRow
+              icon={CreditCard}
+              label="PAN Number"
+              value={viewEmployee?.panNumber}
+            />
+            <DetailRow
+              icon={Fingerprint}
+              label="Aadhaar Number"
+              value={viewEmployee?.aadhaarNumber}
+            />
+            <DetailRow
+              icon={MapPin}
+              label="Address"
+              value={viewEmployee?.address}
+            />
             <DetailRow
               icon={CalendarDays}
               label="Joined"
               value={
                 viewEmployee?.createdAt
-                  ? new Date(viewEmployee.createdAt).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })
+                  ? new Date(viewEmployee.createdAt).toLocaleDateString(
+                      "en-IN",
+                      {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      },
+                    )
                   : undefined
               }
             />
