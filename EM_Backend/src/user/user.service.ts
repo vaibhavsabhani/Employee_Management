@@ -7,123 +7,129 @@ import {
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { GetUsersDto } from './dto/get-users.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
-  async create(
-    createUserDto: CreateUserDto,
-  ) {
+  async create(createUserDto: CreateUserDto) {
     const {
       firstName,
       middleName,
       lastName,
       email,
       phoneNumber,
-      roleId,
+      role,
       profilePicture,
+      address,
+      panNumber,
+      aadhaarNumber,
     } = createUserDto;
 
-    const normalizedEmail =
-      email.toLowerCase().trim();
+    if (!role) {
+      throw new BadRequestException('Role is required');
+    }
 
-    const existingUser =
-      await this.prisma.user.findUnique({
-        where: {
-          email: normalizedEmail,
-        },
-      });
+    const roleData = await this.prisma.role.findUnique({
+      where: {
+        name: role.toLowerCase().trim(),
+      },
+    });
+
+    if (!roleData) {
+      throw new BadRequestException(`Role '${role}' not found`);
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+        email: normalizedEmail,
+      },
+    });
 
     if (existingUser) {
-      throw new BadRequestException(
-        'Email already exists',
-      );
+      throw new BadRequestException('Email already exists');
     }
 
-    const role =
-      await this.prisma.role.findUnique({
-        where: {
-          id: roleId,
-        },
-      });
+    const defaultPassword = 'Abcde@012024';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-    if (!role) {
-      throw new BadRequestException(
-        'Role not found',
-      );
-    }
+    const user = await this.prisma.user.create({
+      data: {
+        firstName: firstName.trim(),
+        middleName: middleName?.trim() || null,
+        lastName: lastName.trim(),
+        email: normalizedEmail,
+        password: hashedPassword,
+        phoneNumber: phoneNumber || null,
+        profilePicture: profilePicture || null,
+        address: address?.trim() || null,
+        panNumber: panNumber?.toUpperCase() || null,
+        aadhaarNumber: aadhaarNumber || null,
+        roleId: roleData.id,
+      },
+      include: {
+        role: true,
+      },
+    });
 
-    const defaultPassword =
-      'Abcde@012024';
+    await this.mailService.sendEmployeeCredentialsEmail(
+      user.email,
+      `${user.firstName} ${user.lastName}`,
+      defaultPassword,
+    );
 
-    const hashedPassword =
-      await bcrypt.hash(
-        defaultPassword,
-        10,
-      );
-
-    const user =
-      await this.prisma.user.create({
-        data: {
-          firstName:
-            firstName.trim(),
-          middleName:
-            middleName?.trim(),
-          lastName:
-            lastName.trim(),
-          email:
-            normalizedEmail,
-          password:
-            hashedPassword,
-          phoneNumber,
-          profilePicture,
-          roleId,
-        },
-        include: {
-          role: true,
-        },
-      });
-
-    const {
-      password,
-      ...userResponse
-    } = user;
+    const { password, ...userResponse } = user;
 
     return {
       success: true,
-      message:
-        'Employee added successfully',
+      message: 'Employee added successfully',
       user: userResponse,
     };
   }
 
-  async findAll(
-    query: GetUsersDto,
-  ) {
+  async findAll(query: GetUsersDto) {
     const {
       offset = '0',
       limit = '10',
       search = '',
-      roleId,
+      email,
+      role,
+      isActive,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = query;
 
     const skip = Number(offset);
 
-    const where: any = {
-      isActive: true,
-    };
+    const where: any = {};
 
-    if (roleId) {
-      where.roleId = roleId;
+    if (isActive === 'false') {
+      where.isActive = false;
+    } else if (isActive === 'all') {
+      // no isActive constraint — return all
+    } else {
+      where.isActive = true;
+    }
+
+    if (role) {
+      where.role = {
+        name: role.toLowerCase().trim(),
+      };
+    }
+
+    if (email) {
+      where.email = { contains: email, mode: 'insensitive' };
     }
 
     if (search) {
@@ -152,67 +158,62 @@ export class UserService {
             mode: 'insensitive',
           },
         },
+        {
+          panNumber: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          aadhaarNumber: {
+            contains: search,
+          },
+        },
       ];
     }
 
-    const [users, total] =
-      await Promise.all([
-        this.prisma.user.findMany({
-          where,
-          include: {
-            role: true,
-          },
-          skip,
-          take: Number(limit),
-          orderBy: {
-            [sortBy]:
-              sortOrder,
-          },
-        }),
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        include: {
+          role: true,
+        },
+        skip,
+        take: Number(limit),
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+      }),
 
-        this.prisma.user.count({
-          where,
-        }),
-      ]);
+      this.prisma.user.count({
+        where,
+      }),
+    ]);
 
     return {
       success: true,
       offset: Number(offset),
       limit: Number(limit),
       total,
-      users: users.map(
-        ({
-          password,
-          ...user
-        }) => user,
-      ),
+      users: users.map(({ password, ...user }) => user),
     };
   }
 
   async findOne(id: string) {
-    const user =
-      await this.prisma.user.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          role: true,
-        },
-      });
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        role: true,
+      },
+    });
 
-    if (
-      !user ||
-      !user.isActive
-    ) {
-      throw new NotFoundException(
-        'User not found',
-      );
+    if (!user || !user.isActive) {
+      throw new NotFoundException('User not found');
     }
 
-    const {
-      password,
-      ...userResponse
-    } = user;
+    const { password, ...userResponse } = user;
 
     return {
       success: true,
@@ -220,61 +221,82 @@ export class UserService {
     };
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ) {
-    const existingUser =
-      await this.prisma.user.findUnique({
-        where: { id },
-      });
+  async updateProfile(id: string, dto: UpdateProfileDto) {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('User not found');
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(dto.firstName && { firstName: dto.firstName.trim() }),
+        ...(dto.middleName !== undefined && { middleName: dto.middleName?.trim() || null }),
+        ...(dto.lastName && { lastName: dto.lastName.trim() }),
+        ...(dto.phoneNumber !== undefined && { phoneNumber: dto.phoneNumber || null }),
+        ...(dto.address !== undefined && { address: dto.address?.trim() || null }),
+        ...(dto.panNumber !== undefined && { panNumber: dto.panNumber?.toUpperCase() || null }),
+        ...(dto.aadhaarNumber !== undefined && { aadhaarNumber: dto.aadhaarNumber || null }),
+      },
+      include: { role: true },
+    });
+
+    const { password, ...userResponse } = updated;
+    return { success: true, message: 'Profile updated successfully', user: userResponse };
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id },
+    });
 
     if (!existingUser) {
-      throw new NotFoundException(
-        'User not found',
-      );
+      throw new NotFoundException('User not found');
     }
 
-    const updatedUser =
-      await this.prisma.user.update({
-        where: {
-          id,
-        },
-        data: {
-          ...updateUserDto,
-          email:
-            updateUserDto.email?.toLowerCase().trim(),
-        },
-        include: {
-          role: true,
-        },
-      });
+    const { role, ...rest } = updateUserDto;
 
-    const {
-      password,
-      ...userResponse
-    } = updatedUser;
+    let roleId: string | undefined;
+    if (role) {
+      const roleData = await this.prisma.role.findUnique({
+        where: { name: role.toLowerCase().trim() },
+      });
+      if (!roleData) {
+        throw new BadRequestException(`Role '${role}' not found`);
+      }
+      roleId = roleData.id;
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        ...rest,
+        ...(roleId && { roleId }),
+        email: rest.email?.toLowerCase().trim(),
+      },
+      include: {
+        role: true,
+      },
+    });
+
+    const { password, ...userResponse } = updatedUser;
 
     return {
       success: true,
-      message:
-        'User updated successfully',
+      message: 'User updated successfully',
       user: userResponse,
     };
   }
 
   async remove(id: string) {
-    const user =
-      await this.prisma.user.findUnique({
-        where: {
-          id,
-        },
-      });
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
 
     if (!user) {
-      throw new NotFoundException(
-        'User not found',
-      );
+      throw new NotFoundException('User not found');
     }
 
     await this.prisma.user.update({
@@ -288,8 +310,7 @@ export class UserService {
 
     return {
       success: true,
-      message:
-        'User deactivated successfully',
+      message: 'User deactivated successfully',
     };
   }
 }

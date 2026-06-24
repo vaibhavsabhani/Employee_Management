@@ -1,9 +1,12 @@
-export const prepareHeaders = (headers: Headers) => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+import { getCookie } from "../cookieStorage";
 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+export const prepareHeaders = (headers: Headers) => {
+  if (typeof window !== "undefined") {
+    const token = getCookie("accessToken") || "null" as string | null;
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
   }
 
   headers.set("Accept", "application/json");

@@ -1,6 +1,6 @@
 "use client";
 
-import { type Control, type FieldValues, type Path } from "react-hook-form";
+import { Control, FieldValues, Path } from "react-hook-form";
 
 import {
   FormControl,
@@ -10,6 +10,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/src/components/ui/form";
+
 import {
   Select,
   SelectContent,
@@ -23,10 +24,8 @@ type SelectOption = {
   value: string;
 };
 
-type SelectFieldProps<T extends FieldValues> = {
-  control: Control<T>;
-  name: Path<T>;
-  label: string;
+type BaseProps = {
+  label?: string;
   required?: boolean;
   options: SelectOption[];
   placeholder?: string;
@@ -34,47 +33,82 @@ type SelectFieldProps<T extends FieldValues> = {
   disabled?: boolean;
 };
 
-export function SelectField<T extends FieldValues>({
-  control,
-  name,
-  label,
-  required,
-  options,
-  placeholder = "Select an option",
-  description,
-  disabled,
-}: SelectFieldProps<T>) {
-  return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel required={required}>{label}</FormLabel>
-          <Select
-            disabled={disabled}
-            onValueChange={field.onChange}
-            value={field.value ?? ""}
-          >
+type FormSelectProps<T extends FieldValues> = BaseProps & {
+  control: Control<T>;
+  name: Path<T>;
+  value?: never;
+  onValueChange?: never;
+};
+
+type NormalSelectProps = BaseProps & {
+  control?: never;
+  name?: never;
+  value?: string;
+  onValueChange?: (value: string) => void;
+};
+
+type SelectFieldProps<T extends FieldValues> =
+  | FormSelectProps<T>
+  | NormalSelectProps;
+
+export function SelectField<T extends FieldValues>(props: SelectFieldProps<T>) {
+  const renderSelect = (value?: string, onChange?: (value: string) => void) => (
+    <Select
+      disabled={props.disabled}
+      value={value ?? ""}
+      onValueChange={onChange}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder={props.placeholder ?? "Select an option"} />
+      </SelectTrigger>
+
+      <SelectContent>
+        {props.options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  if ("control" in props && props.control) {
+    return (
+      <FormField
+        control={props.control}
+        name={props.name}
+        render={({ field }) => (
+          <FormItem>
+            {props.label && (
+              <FormLabel required={props.required}>{props.label}</FormLabel>
+            )}
+
             <FormControl>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={placeholder} />
-              </SelectTrigger>
+              {renderSelect(field.value, field.onChange)}
             </FormControl>
-            <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {description ? (
-            <FormDescription>{description}</FormDescription>
-          ) : null}
-          <FormMessage />
-        </FormItem>
+
+            {props.description && (
+              <FormDescription>{props.description}</FormDescription>
+            )}
+
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {props.label && (
+        <label className="text-sm font-medium">{props.label}</label>
       )}
-    />
+
+      {renderSelect(props.value, props.onValueChange)}
+
+      {props.description && (
+        <p className="text-sm text-muted-foreground">{props.description}</p>
+      )}
+    </div>
   );
 }

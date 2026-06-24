@@ -55,7 +55,7 @@ export class TimeEntryController {
   @ApiOperation({
     summary: 'My Time Entries',
   })
-  @Get('my')
+  @Get('me')
   getMyEntries(
     @Request() req,
     @Query() query: GetTimeEntryDto,
@@ -76,6 +76,27 @@ export class TimeEntryController {
     return this.timeEntryService.findAll(
       query,
     );
+  }
+
+  @ApiOperation({ summary: 'Get My Time Entry by ID' })
+  @Get(':id')
+  @Roles('employee')
+  findOne(
+    @Param('id') id: string,
+    @Request() req,
+  ) {
+    return this.timeEntryService.findOne(id, req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Resubmit Rejected Time Entry' })
+  @Patch(':id')
+  @Roles('employee')
+  resubmit(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() dto: UpdateTimeEntryDto,
+  ) {
+    return this.timeEntryService.resubmit(id, req.user.id, dto);
   }
 
   @ApiOperation({

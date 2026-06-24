@@ -7,10 +7,12 @@ import {
   Patch,
   Post,
   Query,
+  Request,
 } from '@nestjs/common';
 
 import {
   ApiBearerAuth,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,6 +23,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { GetUsersDto } from './dto/get-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -49,6 +52,21 @@ export class UserController {
     return this.userService.findAll(
       query,
     );
+  }
+
+  @ApiOperation({ summary: 'Get my profile' })
+  @Get('me')
+  getMe(@Request() req) {
+    return this.userService.findOne(req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Update my profile (email excluded)' })
+  @Patch('me')
+  updateMe(
+    @Request() req,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.userService.updateProfile(req.user.id, dto);
   }
 
   @Get(':id')

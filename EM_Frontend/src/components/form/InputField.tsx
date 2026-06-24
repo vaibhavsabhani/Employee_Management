@@ -21,7 +21,7 @@ type InputFieldProps<T extends FieldValues> = {
   name: Path<T>;
   label: string;
   required?: boolean;
-  type?: "text" | "email" | "password" | "number" | "date" | "tel" | "url";
+  type?: "text" | "email" | "password" | "number" | "date" | "time" | "tel" | "url";
   placeholder?: string;
   description?: string;
   disabled?: boolean;

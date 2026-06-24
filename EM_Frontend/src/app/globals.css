@@ -48,6 +48,103 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Semantic badge colours ── */
+  --color-badge-pending:        var(--badge-pending-bg);
+  --color-badge-pending-fg:     var(--badge-pending-fg);
+  --color-badge-pending-ring:   var(--badge-pending-border);
+
+  --color-badge-success:        var(--badge-success-bg);
+  --color-badge-success-fg:     var(--badge-success-fg);
+  --color-badge-success-ring:   var(--badge-success-border);
+
+  --color-badge-danger:         var(--badge-danger-bg);
+  --color-badge-danger-fg:      var(--badge-danger-fg);
+  --color-badge-danger-ring:    var(--badge-danger-border);
+
+  --color-badge-neutral:        var(--badge-neutral-bg);
+  --color-badge-neutral-fg:     var(--badge-neutral-fg);
+  --color-badge-neutral-ring:   var(--badge-neutral-border);
+
+  --color-badge-info:           var(--badge-info-bg);
+  --color-badge-info-fg:        var(--badge-info-fg);
+  --color-badge-info-ring:      var(--badge-info-border);
+
+  --color-badge-purple:         var(--badge-purple-bg);
+  --color-badge-purple-fg:      var(--badge-purple-fg);
+  --color-badge-purple-ring:    var(--badge-purple-border);
+
+  /* ── Action button colours ── */
+  --color-btn-approve-ring:     var(--btn-approve-border);
+  --color-btn-approve-fg:       var(--btn-approve-fg);
+  --color-btn-approve-hover:    var(--btn-approve-hover);
+
+  --color-btn-reject-ring:      var(--btn-reject-border);
+  --color-btn-reject-fg:        var(--btn-reject-fg);
+  --color-btn-reject-hover:     var(--btn-reject-hover);
+
+  --color-btn-outline-ring:     var(--btn-outline-border);
+  --color-btn-outline-fg:       var(--btn-outline-fg);
+
+  /* ── Stat card — amber (pending / not-marked) ── */
+  --color-stat-amber-ring:      var(--stat-amber-border);
+  --color-stat-amber-card:      var(--stat-amber-bg);
+  --color-stat-amber-icon:      var(--stat-amber-icon-bg);
+  --color-stat-amber-icon-fg:   var(--stat-amber-icon-fg);
+  --color-stat-amber-label:     var(--stat-amber-label);
+  --color-stat-amber-value:     var(--stat-amber-value);
+
+  /* ── Stat card — green (approved / present) ── */
+  --color-stat-green-ring:      var(--stat-green-border);
+  --color-stat-green-card:      var(--stat-green-bg);
+  --color-stat-green-icon:      var(--stat-green-icon-bg);
+  --color-stat-green-icon-fg:   var(--stat-green-icon-fg);
+  --color-stat-green-label:     var(--stat-green-label);
+  --color-stat-green-value:     var(--stat-green-value);
+
+  /* ── Stat card — blue (on leave) ── */
+  --color-stat-blue-ring:       var(--stat-blue-border);
+  --color-stat-blue-card:       var(--stat-blue-bg);
+  --color-stat-blue-icon:       var(--stat-blue-icon-bg);
+  --color-stat-blue-icon-fg:    var(--stat-blue-icon-fg);
+  --color-stat-blue-label:      var(--stat-blue-label);
+  --color-stat-blue-value:      var(--stat-blue-value);
+
+  /* ── Stat card — red (absent) ── */
+  --color-stat-red-ring:        var(--stat-red-border);
+  --color-stat-red-card:        var(--stat-red-bg);
+  --color-stat-red-icon:        var(--stat-red-icon-bg);
+  --color-stat-red-icon-fg:     var(--stat-red-icon-fg);
+  --color-stat-red-label:       var(--stat-red-label);
+  --color-stat-red-value:       var(--stat-red-value);
+
+  /* ── Stat card — slate (total) ── */
+  --color-stat-slate-ring:      var(--stat-slate-border);
+  --color-stat-slate-card:      var(--stat-slate-bg);
+  --color-stat-slate-icon:      var(--stat-slate-icon-bg);
+  --color-stat-slate-icon-fg:   var(--stat-slate-icon-fg);
+  --color-stat-slate-label:     var(--stat-slate-label);
+  --color-stat-slate-value:     var(--stat-slate-value);
+
+  /* ── Filter pills (inactive state) ── */
+  --color-pill-bg:              var(--pill-bg);
+  --color-pill-fg:              var(--pill-fg);
+  --color-pill-ring:            var(--pill-border);
+
+  /* ── Notification panel ── */
+  --color-notif-panel:          var(--notif-bg);
+  --color-notif-panel-ring:     var(--notif-border);
+  --color-notif-divider:        var(--notif-divider);
+  --color-notif-title:          var(--notif-title);
+  --color-notif-msg:            var(--notif-msg);
+  --color-notif-time:           var(--notif-time);
+  --color-notif-hover:          var(--notif-hover);
+  --color-notif-unread:         var(--notif-unread-bg);
+  --color-notif-badge:          var(--notif-badge-bg);
+  --color-notif-badge-fg:       var(--notif-badge-fg);
+  --color-notif-action-fg:      var(--notif-mark-fg);
+  --color-notif-empty-icon:     var(--notif-empty-icon);
+  --color-notif-empty-fg:       var(--notif-empty-text);
 }
 
 :root {
@@ -77,14 +174,113 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* ── Sidebar brand palette ── */
+  --sidebar: #030453;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #370ef1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(79, 128, 255, 0.18);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #1a326d;
+
+  /* ── Status badge colours (light) ── */
+  --badge-pending-bg:     #fef3c7;  /* amber-100  */
+  --badge-pending-fg:     #b45309;  /* amber-700  */
+  --badge-pending-border: #fde68a;  /* amber-200  */
+
+  --badge-success-bg:     #dcfce7;  /* green-100  */
+  --badge-success-fg:     #15803d;  /* green-700  */
+  --badge-success-border: #bbf7d0;  /* green-200  */
+
+  --badge-danger-bg:      #fee2e2;  /* red-100    */
+  --badge-danger-fg:      #b91c1c;  /* red-700    */
+  --badge-danger-border:  #fecaca;  /* red-200    */
+
+  --badge-neutral-bg:     #f1f5f9;  /* slate-100  */
+  --badge-neutral-fg:     #64748b;  /* slate-500  */
+  --badge-neutral-border: #e2e8f0;  /* slate-200  */
+
+  --badge-info-bg:        #dbeafe;  /* blue-100   */
+  --badge-info-fg:        #1d4ed8;  /* blue-700   */
+  --badge-info-border:    #bfdbfe;  /* blue-200   */
+
+  --badge-purple-bg:      #f5f3ff;  /* purple-50  */
+  --badge-purple-fg:      #7e22ce;  /* purple-700 */
+  --badge-purple-border:  #e9d5ff;  /* purple-200 */
+
+  /* ── Action button colours (light) ── */
+  --btn-approve-border:   #86efac;  /* green-300  */
+  --btn-approve-fg:       #15803d;  /* green-700  */
+  --btn-approve-hover:    #f0fdf4;  /* green-50   */
+
+  --btn-reject-border:    #fca5a5;  /* red-300    */
+  --btn-reject-fg:        #b91c1c;  /* red-700    */
+  --btn-reject-hover:     #fef2f2;  /* red-50     */
+
+  --btn-outline-border:   #cbd5e1;  /* slate-300  */
+  --btn-outline-fg:       #334155;  /* slate-700  */
+
+  /* ── Stat card — amber (light) ── */
+  --stat-amber-border:    #fde68a;  /* amber-200  */
+  --stat-amber-bg:        #fffbeb;  /* amber-50   */
+  --stat-amber-icon-bg:   #fef3c7;  /* amber-100  */
+  --stat-amber-icon-fg:   #d97706;  /* amber-600  */
+  --stat-amber-label:     #b45309;  /* amber-700  */
+  --stat-amber-value:     #92400e;  /* amber-800  */
+
+  /* ── Stat card — green (light) ── */
+  --stat-green-border:    #bbf7d0;  /* green-200  */
+  --stat-green-bg:        #f0fdf4;  /* green-50   */
+  --stat-green-icon-bg:   #dcfce7;  /* green-100  */
+  --stat-green-icon-fg:   #16a34a;  /* green-600  */
+  --stat-green-label:     #15803d;  /* green-700  */
+  --stat-green-value:     #166534;  /* green-800  */
+
+  /* ── Stat card — blue (light) ── */
+  --stat-blue-border:     #bfdbfe;  /* blue-200   */
+  --stat-blue-bg:         #eff6ff;  /* blue-50    */
+  --stat-blue-icon-bg:    #dbeafe;  /* blue-100   */
+  --stat-blue-icon-fg:    #2563eb;  /* blue-600   */
+  --stat-blue-label:      #1d4ed8;  /* blue-700   */
+  --stat-blue-value:      #1e40af;  /* blue-800   */
+
+  /* ── Stat card — red (light) ── */
+  --stat-red-border:      #fecaca;  /* red-200    */
+  --stat-red-bg:          #fef2f2;  /* red-50     */
+  --stat-red-icon-bg:     #fee2e2;  /* red-100    */
+  --stat-red-icon-fg:     #dc2626;  /* red-600    */
+  --stat-red-label:       #b91c1c;  /* red-700    */
+  --stat-red-value:       #991b1b;  /* red-800    */
+
+  /* ── Stat card — slate (light) ── */
+  --stat-slate-border:    #e2e8f0;  /* slate-200  */
+  --stat-slate-bg:        #f8fafc;  /* slate-50   */
+  --stat-slate-icon-bg:   #f1f5f9;  /* slate-100  */
+  --stat-slate-icon-fg:   #475569;  /* slate-600  */
+  --stat-slate-label:     #475569;  /* slate-600  */
+  --stat-slate-value:     #334155;  /* slate-700  */
+
+  /* ── Filter pills (light) ── */
+  --pill-bg:              #ffffff;
+  --pill-fg:              #475569;  /* slate-600  */
+  --pill-border:          #e2e8f0;  /* slate-200  */
+
+  /* ── Notification panel (light) ── */
+  --notif-bg:             #ffffff;
+  --notif-border:         #e2e8f0;  /* slate-200  */
+  --notif-divider:        #f8fafc;  /* slate-50   */
+  --notif-title:          #0f172a;  /* slate-900  */
+  --notif-msg:            #64748b;  /* slate-500  */
+  --notif-time:           #94a3b8;  /* slate-400  */
+  --notif-hover:          #f8fafc;  /* slate-50   */
+  --notif-unread-bg:      #f5f3ff;  /* violet-50  */
+  --notif-badge-bg:       #ede9fe;  /* violet-100 */
+  --notif-badge-fg:       #6d28d9;  /* violet-700 */
+  --notif-mark-fg:        #7c3aed;  /* violet-600 */
+  --notif-empty-icon:     #cbd5e1;  /* slate-300  */
+  --notif-empty-text:     #94a3b8;  /* slate-400  */
 }
 
 .dark {
@@ -113,23 +309,122 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #0f1e3d;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #4f80ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(17, 14, 44, 0.22);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #4f80ff;
+
+  /* ── Status badge colours (dark) ── */
+  --badge-pending-bg:     #451a0366;  /* amber-900 / 40% */
+  --badge-pending-fg:     #fcd34d;    /* amber-300        */
+  --badge-pending-border: #92400e;    /* amber-800        */
+
+  --badge-success-bg:     #14532d66;  /* green-900 / 40%  */
+  --badge-success-fg:     #86efac;    /* green-300        */
+  --badge-success-border: #166534;    /* green-800        */
+
+  --badge-danger-bg:      #7f1d1d66;  /* red-900 / 40%    */
+  --badge-danger-fg:      #fca5a5;    /* red-300          */
+  --badge-danger-border:  #991b1b;    /* red-800          */
+
+  --badge-neutral-bg:     #33415599;  /* slate-700 / 60%  */
+  --badge-neutral-fg:     #cbd5e1;    /* slate-300        */
+  --badge-neutral-border: #475569;    /* slate-600        */
+
+  --badge-info-bg:        #1e3a8a66;  /* blue-900 / 40%   */
+  --badge-info-fg:        #93c5fd;    /* blue-300         */
+  --badge-info-border:    #1e40af;    /* blue-800         */
+
+  --badge-purple-bg:      #3b076466;  /* purple-950 / 40% */
+  --badge-purple-fg:      #d8b4fe;    /* purple-300       */
+  --badge-purple-border:  #6b21a8;    /* purple-800       */
+
+  /* ── Action button colours (dark) ── */
+  --btn-approve-border:   #15803d;    /* green-700        */
+  --btn-approve-fg:       #86efac;    /* green-400        */
+  --btn-approve-hover:    #14532d4d;  /* green-900 / 30%  */
+
+  --btn-reject-border:    #991b1b;    /* red-700          */
+  --btn-reject-fg:        #fca5a5;    /* red-400          */
+  --btn-reject-hover:     #7f1d1d4d;  /* red-900 / 30%    */
+
+  --btn-outline-border:   #475569;    /* slate-600        */
+  --btn-outline-fg:       #cbd5e1;    /* slate-300        */
+
+  /* ── Stat card — amber (dark) ── */
+  --stat-amber-border:    #92400e;
+  --stat-amber-bg:        #78350f4d;  /* amber-900 / 30%  */
+  --stat-amber-icon-bg:   #78350f80;  /* amber-900 / 50%  */
+  --stat-amber-icon-fg:   #fbbf24;    /* amber-400        */
+  --stat-amber-label:     #fbbf24;    /* amber-400        */
+  --stat-amber-value:     #fde68a;    /* amber-200        */
+
+  /* ── Stat card — green (dark) ── */
+  --stat-green-border:    #166534;
+  --stat-green-bg:        #14532d4d;  /* green-900 / 30%  */
+  --stat-green-icon-bg:   #14532d80;  /* green-900 / 50%  */
+  --stat-green-icon-fg:   #4ade80;    /* green-400        */
+  --stat-green-label:     #4ade80;    /* green-400        */
+  --stat-green-value:     #bbf7d0;    /* green-200        */
+
+  /* ── Stat card — blue (dark) ── */
+  --stat-blue-border:     #1e40af;
+  --stat-blue-bg:         #1e3a8a4d;  /* blue-900 / 30%   */
+  --stat-blue-icon-bg:    #1e3a8a80;  /* blue-900 / 50%   */
+  --stat-blue-icon-fg:    #60a5fa;    /* blue-400         */
+  --stat-blue-label:      #60a5fa;    /* blue-400         */
+  --stat-blue-value:      #bfdbfe;    /* blue-200         */
+
+  /* ── Stat card — red (dark) ── */
+  --stat-red-border:      #991b1b;
+  --stat-red-bg:          #7f1d1d4d;  /* red-900 / 30%    */
+  --stat-red-icon-bg:     #7f1d1d80;  /* red-900 / 50%    */
+  --stat-red-icon-fg:     #f87171;    /* red-400          */
+  --stat-red-label:       #f87171;    /* red-400          */
+  --stat-red-value:       #fecaca;    /* red-200          */
+
+  /* ── Stat card — slate (dark) ── */
+  --stat-slate-border:    #334155;
+  --stat-slate-bg:        #1e293b99;  /* slate-800 / 60%  */
+  --stat-slate-icon-bg:   #334155;    /* slate-700        */
+  --stat-slate-icon-fg:   #94a3b8;    /* slate-400        */
+  --stat-slate-label:     #94a3b8;    /* slate-400        */
+  --stat-slate-value:     #cbd5e1;    /* slate-300        */
+
+  /* ── Filter pills (dark) ── */
+  --pill-bg:              #1e293b;    /* slate-800        */
+  --pill-fg:              #cbd5e1;    /* slate-300        */
+  --pill-border:          #475569;    /* slate-600        */
+
+  /* ── Notification panel (dark) ── */
+  --notif-bg:             #0f172a;    /* slate-900        */
+  --notif-border:         #334155;    /* slate-700        */
+  --notif-divider:        #33415566;  /* slate-700 / 40%  */
+  --notif-title:          #f1f5f9;    /* slate-100        */
+  --notif-msg:            #94a3b8;    /* slate-400        */
+  --notif-time:           #64748b;    /* slate-500        */
+  --notif-hover:          #1e293b;    /* slate-800        */
+  --notif-unread-bg:      #1e1b4b33;  /* violet-950 / 20% */
+  --notif-badge-bg:       #4c1d9566;  /* violet-900 / 40% */
+  --notif-badge-fg:       #c4b5fd;    /* violet-300       */
+  --notif-mark-fg:        #a78bfa;    /* violet-400       */
+  --notif-empty-icon:     #334155;    /* slate-700        */
+  --notif-empty-text:     #64748b;    /* slate-500        */
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }

@@ -8,11 +8,11 @@ export const Toast = (
 ) => {
   switch (type) {
     case "success":
-      toast.success(res?.data?.message || "Operation completed successfully");
+      toast.success(res?.data?.message || res?.message || "Operation completed successfully");
       break;
 
     case "error":
-      toast.error(res?.error?.data?.message || "An error occurred");
+      toast.error(res?.error?.data?.message || res?.error?.data?.message || "An error occurred");
       break;
 
     case "warning":

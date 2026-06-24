@@ -30,19 +30,68 @@ model User {
   password       String   @map("password")
   phoneNumber    String?  @unique @map("phone_number")
   profilePicture String?  @map("profile_picture")
+  address        String?  @map("address")
+  panNumber      String?  @unique @map("pan_number")
+  aadhaarNumber  String?  @unique @map("aadhaar_number")
   isActive       Boolean  @default(true) @map("is_active")
   roleId         String   @map("role_id")
   role           Role     @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   createdAt      DateTime @default(now()) @map("created_at")
   createdBy      String?  @map("created_by")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  updatedBy      String?  @map("updated_by")
 
-  employeeTimeEntries TimeEntry[] @relation("EmployeeTimeEntries")
-  approvedTimeEntries TimeEntry[] @relation("ApprovedTimeEntries")
-  updatedAt           DateTime    @updatedAt @map("updated_at")
-  updatedBy           String?     @map("updated_by")
+  employeeTimeEntries TimeEntry[]          @relation("EmployeeTimeEntries")
+  approvedTimeEntries TimeEntry[]          @relation("ApprovedTimeEntries")
+  passwordResetTokens PasswordResetToken[] @relation("UserPasswordResetTokens")
+  employeeLeaves      Leave[]              @relation("EmployeeLeaves")
+  approvedLeaves      Leave[]              @relation("AdminApprovedLeaves")
+  attendances         Attendance[]         @relation("EmployeeAttendances")
+  markedAttendances   Attendance[]         @relation("AdminMarkedAttendances")
+  notifications       Notification[]       @relation("UserNotifications")
+  activityLogs        UserActivityLog[]    @relation("UserActivityLogs")
 
   @@index([roleId])
   @@map("users")
+}
+
+model UserActivityLog {
+  id        String    @id @default(uuid()) @map("id")
+  userId    String    @map("user_id")
+  user      User      @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
+  action    String    @map("action")
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  browser   String?   @map("browser")
+  os        String?   @map("os")
+  device    String?   @map("device")
+  country   String?   @map("country")
+  city      String?   @map("city")
+  region    String?   @map("region")
+  loginAt   DateTime  @default(now()) @map("login_at")
+  logoutAt  DateTime? @map("logout_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([loginAt])
+  @@map("user_activity_logs")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @map("id")
+  token     String   @unique @map("token")
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  user User @relation("UserPasswordResetTokens", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 model TimeEntryStatus {
@@ -86,4 +135,111 @@ model TimeEntry {
   @@index([statusId])
   @@index([date])
   @@map("time_entries")
+}
+
+model LeaveType {
+  id        Int      @id @default(autoincrement()) @map("id")
+  name      String   @unique @map("name")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  leaves Leave[]
+
+  @@map("leave_types")
+}
+
+model LeaveStatus {
+  id        Int      @id @default(autoincrement()) @map("id")
+  name      String   @unique @map("name")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  leaves Leave[]
+
+  @@map("leave_statuses")
+}
+
+model Leave {
+  id              String   @id @default(uuid()) @map("id")
+  employeeId      String   @map("employee_id")
+  leaveTypeId     Int      @map("leave_type_id")
+  statusId        Int      @default(1) @map("status_id")
+  startDate       DateTime @map("start_date")
+  endDate         DateTime @map("end_date")
+  totalDays       Int      @map("total_days")
+  reason          String?  @map("reason")
+  rejectionReason String?  @map("rejection_reason")
+  approvedById    String?  @map("approved_by_id")
+  approvedBy      User?    @relation("AdminApprovedLeaves", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  createdBy       String?  @map("created_by")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  updatedBy       String?  @map("updated_by")
+
+  employee  User        @relation("EmployeeLeaves", fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  leaveType LeaveType   @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  status    LeaveStatus @relation(fields: [statusId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([employeeId])
+  @@index([leaveTypeId])
+  @@index([statusId])
+  @@index([startDate])
+  @@map("leaves")
+}
+
+model AttendanceStatus {
+  id        Int      @id @default(autoincrement()) @map("id")
+  name      String   @unique @map("name")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  attendances Attendance[]
+
+  @@map("attendance_statuses")
+}
+
+model Attendance {
+  id         String           @id @default(uuid()) @map("id")
+  employeeId String           @map("employee_id")
+  employee   User             @relation("EmployeeAttendances", fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  date       DateTime         @map("date")
+  statusId   Int              @map("status_id")
+  status     AttendanceStatus @relation(fields: [statusId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  markedById String?          @map("marked_by_id")
+  markedBy   User?            @relation("AdminMarkedAttendances", fields: [markedById], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  notes      String?          @map("notes")
+  isActive   Boolean          @default(true) @map("is_active")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+  @@index([statusId])
+  @@map("attendances")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false) @map("is_read")
+  data      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
 }

@@ -1,0 +1,270 @@
+"use client";
+
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import useDynamicHeight from "@/src/hooks/useDynamicHeight";
+import ScrollAreaComponent from "./ScrollAreaComponent";
+import Loader from "./Loader";
+
+interface DataTableProps<TData = unknown, TValue = unknown> {
+  columns?: ColumnDef<TData, TValue>[];
+  data: TData[];
+  loading?: boolean;
+  hidePagination?: boolean;
+  onNext?: () => void;
+  onPrev?: () => void;
+  canNext?: boolean;
+  canPrev?: boolean;
+  page?: number;
+  total?: number;
+  totalRecords?: number;
+  maxHeight?: string;
+  showExtraHeader?: string[];
+  showAllRows?: boolean;
+  className?: string;
+  limit?: number;
+  setLimit?: (limit: number) => void;
+  limitOptions?: number[];
+  hideDataTable?: boolean;
+}
+
+export function DataTable<TData, TValue>({
+  columns = [],
+  data,
+  loading,
+  onNext,
+  onPrev,
+  canNext,
+  canPrev,
+  page,
+  hidePagination = false,
+  total,
+  totalRecords = 0,
+  maxHeight,
+  showExtraHeader,
+  showAllRows = false,
+  className,
+  limit,
+  setLimit,
+  limitOptions = [10, 20, 30, 40, 50, 100],
+  hideDataTable = true,
+}: DataTableProps<TData, TValue>) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentPage = page ?? 1;
+  const totalPages = total ?? 1;
+  const effectiveLimit = limit ?? 10;
+
+  const displayData = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return hidePagination && !showAllRows
+      ? data.slice(0, effectiveLimit)
+      : data;
+  }, [data, hidePagination, showAllRows, effectiveLimit]);
+
+  const table = useReactTable({
+    data: displayData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const measuredElements = ["header", "Filter", "hidePagination"];
+  if (showExtraHeader?.length) {
+    measuredElements.push(...showExtraHeader);
+  }
+
+  const totalOffset = useDynamicHeight(measuredElements, 75);
+  const finalHeight = maxHeight || `calc(100vh - ${totalOffset}px)`;
+
+  // Use "auto" until mounted to match the server-rendered HTML and avoid hydration mismatch
+  const scrollHeight = mounted ? finalHeight : "auto";
+
+  const PAGE_WINDOW = 5;
+  const startPage = Math.max(1, currentPage - Math.floor(PAGE_WINDOW / 2));
+  const endPage = Math.min(totalPages, startPage + PAGE_WINDOW - 1);
+  const visiblePages = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, i) => startPage + i,
+  );
+
+  const jumpToPage = (targetPage: number) => {
+    if (!onNext || !onPrev || targetPage === currentPage) return;
+    const diff = targetPage - currentPage;
+    if (diff > 0) {
+      for (let i = 0; i < diff; i++) onNext();
+    } else {
+      for (let i = 0; i < Math.abs(diff); i++) onPrev();
+    }
+  };
+
+  const limitSelectOptions = limitOptions.map((opt) => ({
+    label: String(opt),
+    value: String(opt),
+  }));
+
+  return loading ? (
+    <Loader />
+  ) : (
+    <div>
+      {hideDataTable ? (
+        <ScrollAreaComponent style={{ height: scrollHeight }}>
+          <div className={`px-2 py-3 ${className}`}>
+            {displayData.length > 0 ? (
+              <div className="rounded outline-8">
+                <Table>
+                  <TableHeader className="rounded!">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow
+                        key={headerGroup.id}
+                        className="bg-sidebar-primary text-heading font-primary"
+                      >
+                        {headerGroup.headers.map((header) => (
+                          <TableHead
+                            key={header.id}
+                            className="first:rounded-tl-md last:rounded-tr-md text-left p-4 text-white font-extrabold"
+                            style={{
+                              width: header.getSize(),
+                              minWidth: header.column.columnDef.minSize,
+                              maxWidth: header.column.columnDef.maxSize,
+                            }}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="p-4 first:rounded-bl-md last:rounded-br-md"
+                            style={{
+                              width: cell.column.getSize(),
+                              minWidth: cell.column.columnDef.minSize,
+                              maxWidth: cell.column.columnDef.maxSize,
+                            }}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="w-full flex justify-center py-8 text-slate-400 dark:text-slate-500">
+                No Data Found
+              </p>
+            )}
+          </div>
+        </ScrollAreaComponent>
+      ) : null}
+
+      {hidePagination ? null : (
+        <div
+          className="flex max-[570px]:flex-col min-[1033px]:flex-row flex-col min-[1033px]:gap-0 gap-3 items-center justify-between px-2 pt-4"
+          id="hidePagination"
+        >
+          {/* LEFT: rows per page */}
+          {setLimit && displayData.length > 0 && totalRecords > 9 && (
+            <div className="flex items-center gap-2">
+              <Select
+                value={String(limit ?? "")}
+                onValueChange={(val) => setLimit(Number(val))}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="Rows" />
+                </SelectTrigger>
+                <SelectContent>
+                  {limitSelectOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-sm">Records Per Page</span>
+            </div>
+          )}
+
+          {/* CENTER: total */}
+          <span className="text-sm">Total Records : {totalRecords}</span>
+
+          {/* RIGHT: pagination */}
+          {displayData.length > 0 && totalRecords > 9 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={onPrev}
+                disabled={!canPrev}
+                className={`px-2 py-1 text-sm disabled:opacity-50 font-semibold hover:underline ${!canPrev ? "" : "cursor-pointer"}`}
+              >
+                Prev
+              </button>
+
+              {visiblePages.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => jumpToPage(p)}
+                  className={`px-3 py-1 text-sm rounded cursor-pointer transition-colors ${
+                    p === currentPage
+                      ? "bg-sidebar-primary text-white font-semibold"
+                      : "border border-pill-ring text-pill-fg hover:bg-muted"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+
+              <button
+                onClick={onNext}
+                disabled={!canNext}
+                className={`px-2 py-1 text-sm disabled:opacity-50 font-semibold hover:underline ${!canNext ? "" : "cursor-pointer"}`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
