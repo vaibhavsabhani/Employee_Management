@@ -60,11 +60,8 @@ const LoginPage = () => {
               <Building2 className="size-5" />
             </div>
             <div>
-              <div className="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-blue-700 dark:text-blue-300">
-                Employee Management System
-              </div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                HR Pro Pulse
+              <div className="font-bold uppercase tracking-[0.28em] text-[#1919ed] dark:text-blue-300">
+                Aksharam Fintech Pvt Ltd
               </div>
             </div>
           </div>

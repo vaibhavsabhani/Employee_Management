@@ -188,8 +188,9 @@ const TimeEntryPage = () => {
     {
       accessorKey: "notes",
       header: "Notes",
+      size: 320,
       cell: ({ row }) => (
-        <span className="max-w-50 truncate block text-slate-500 dark:text-slate-400 text-sm">
+        <span className="wrap-break-word whitespace-normal block text-slate-500 dark:text-slate-400 text-sm">
           {row.original.notes || "—"}
         </span>
       ),
