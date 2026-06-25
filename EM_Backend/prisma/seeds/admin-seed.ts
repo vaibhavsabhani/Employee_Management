@@ -29,8 +29,8 @@ export async function seedAdmin() {
 
   await prisma.user.create({
     data: {
-      firstName: 'vaibhav',
-      lastName: 'sabhani',
+      firstName: 'Priyansh',
+      lastName: 'Moghariya',
       email: 'priyanshmoghariya1124@gmail.com',
       password: hashedPassword,
       roleId: adminRole.id,

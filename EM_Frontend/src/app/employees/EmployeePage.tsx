@@ -217,7 +217,7 @@ const EmployeeFilterPanel = ({
 );
 
 /* ── page ─────────────────────────────────────────────────── */
-const defaultEmployeeFilters = { search: "", email: "", isActive: "true" };
+const defaultEmployeeFilters = { search: "", email: "", isActive: "true" , role: "employee" };
 
 const EmployeePage = () => {
   const router = useRouter();

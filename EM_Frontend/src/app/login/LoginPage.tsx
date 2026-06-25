@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthLayout } from "@/src/components/custom/AuthLayout";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight, Building2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/src/components/ui/button";
@@ -110,10 +110,20 @@ const LoginPage = () => {
 
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="mt-2 h-11 w-full rounded-xl text-sm font-semibold shadow-[0_18px_40px_rgba(15,45,107,0.28)] transition-all hover:-translate-y-0.5 hover:bg-[#12357d]"
               >
-                Sign In
-                <ArrowRight className="size-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="size-4" />
+                  </>
+                )}
               </Button>
             </form>
           </Form>

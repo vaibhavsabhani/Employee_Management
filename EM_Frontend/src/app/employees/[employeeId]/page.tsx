@@ -218,7 +218,7 @@ const page = () => {
                     label="Role"
                     placeholder="Select a role"
                     options={[
-                      { value: "admin", label: "Admin" },
+                      // { value: "admin", label: "Admin" },
                       { value: "employee", label: "Employee" },
                     ]}
                     required

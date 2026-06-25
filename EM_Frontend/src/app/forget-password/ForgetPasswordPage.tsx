@@ -40,7 +40,7 @@ const ForgetPasswordPage = () => {
   const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
 
   const onSubmit = async (data: forgetPasswordFormValues) => {
-    const res = await forgetPassword(data?.email)
+    const res = await forgetPassword(data?.email);
     if (res?.error) {
       Toast(res, "error");
       return;
@@ -53,18 +53,15 @@ const ForgetPasswordPage = () => {
 
   return (
     <AuthLayout>
-      <Card className="border-white/10 bg-white/96 dark:bg-slate-900/96 shadow-[0_28px_80px_rgba(2,8,23,0.42)] backdrop-blur-xl">
-        <CardHeader className="space-y-5 border-b border-slate-200/80 px-8 pb-6 pt-8 dark:border-white/10 sm:px-10">
+      <Card className="border-white/10 bg-white dark:bg-slate-900 shadow-[0_28px_80px_rgba(2,8,23,0.42)] backdrop-blur-xl pb-6">
+        <CardHeader className="space-y-5 border-b border-slate-200/80 px-8 pb-6 pt-8 dark:border-white/10 sm:px-10 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl">
           <div className="flex items-center gap-3 text-slate-950 dark:text-white">
             <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-700 via-blue-600 to-sky-500 text-white shadow-lg shadow-blue-950/20">
               <Building2 className="size-5" />
             </div>
             <div>
-              <div className="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-blue-700 dark:text-blue-300">
-                Employee Management System
-              </div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                HR Pro Pulse
+              <div className="font-bold uppercase tracking-[0.28em] text-[#1919ed] dark:text-blue-300">
+                Aksharam Fintech Pvt Ltd
               </div>
             </div>
           </div>
