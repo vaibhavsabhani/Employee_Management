@@ -15,12 +15,14 @@ import {
   Fingerprint,
   CalendarDays,
   Search,
+  UserCheck,
 } from "lucide-react";
 
 import usePaginatedQuery from "@/src/hooks/usePagination";
 import {
   useLazyGetEmployeesQuery,
   useDeleteEmployeeMutation,
+  useEditEmployeeMutation,
 } from "@/src/store/action";
 import { Toast } from "@/src/components/custom/Toast";
 import { ConfirmDialog } from "@/src/components/custom/ConfirmDialog";
@@ -222,11 +224,12 @@ const defaultEmployeeFilters = { search: "", email: "", isActive: "true" , role:
 const EmployeePage = () => {
   const router = useRouter();
   const [getEmployees] = useLazyGetEmployeesQuery();
-  const [deleteEmployee, { isLoading: isDeleting }] =
-    useDeleteEmployeeMutation();
+  const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation();
+  const [editEmployee, { isLoading: isReactivating }] = useEditEmployeeMutation();
 
   const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
+  const [reactivateTarget, setReactivateTarget] = useState<Employee | null>(null);
   const [draft, setDraft] = useState<DraftFilters>(defaultDraft);
 
   /* ── pagination ── */
@@ -287,6 +290,19 @@ const EmployeePage = () => {
     }
   };
 
+  /* ── reactivate handler ── */
+  const handleReactivate = async () => {
+    if (!reactivateTarget) return;
+    try {
+      const res = await editEmployee({ employeeId: reactivateTarget.id, body: { isActive: true } }).unwrap();
+      Toast(res, "success");
+      setReactivateTarget(null);
+      refetch();
+    } catch (err: any) {
+      Toast({ error: err }, "error");
+    }
+  };
+
   /* ── active status tabs (applied) ── */
   const activeIsActive = (filters as any)?.isActive ?? "true";
 
@@ -340,7 +356,7 @@ const EmployeePage = () => {
     {
       id: "actions",
       header: "Actions",
-      minSize: 210,
+      minSize: 220,
       cell: ({ row }) => {
         const emp: Employee = row.original;
         return (
@@ -364,15 +380,27 @@ const EmployeePage = () => {
               Edit
             </Button>
 
-            <Button
-              size="sm"
-              variant="destructive"
-              className="h-7 px-2.5 text-xs gap-1 shrink-0"
-              onClick={() => setDeleteTarget(emp)}
-            >
-              <Trash2 className="size-3" />
-              Delete
-            </Button>
+            {emp.isActive ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                className="h-7 px-2.5 text-xs gap-1 shrink-0"
+                onClick={() => setDeleteTarget(emp)}
+              >
+                <Trash2 className="size-3" />
+                Delete
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2.5 text-xs gap-1 shrink-0 border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700"
+                onClick={() => setReactivateTarget(emp)}
+              >
+                <UserCheck className="size-3" />
+                Reactivate
+              </Button>
+            )}
           </div>
         );
       },
@@ -564,6 +592,19 @@ const EmployeePage = () => {
         variant="destructive"
         isLoading={isDeleting}
         onConfirm={handleDelete}
+      />
+
+      {/* ── Reactivate Confirm Dialog ────────────────────── */}
+      <ConfirmDialog
+        open={!!reactivateTarget}
+        onOpenChange={(o) => !o && setReactivateTarget(null)}
+        title="Reactivate Employee?"
+        description={`${reactivateTarget ? [reactivateTarget.firstName, reactivateTarget.lastName].join(" ") : "This employee"} will regain access to the portal immediately.`}
+        icon={<UserCheck className="size-5" />}
+        confirmLabel={isReactivating ? "Reactivating…" : "Yes, Reactivate"}
+        cancelLabel="Cancel"
+        isLoading={isReactivating}
+        onConfirm={handleReactivate}
       />
     </div>
   );
