@@ -30,9 +30,7 @@ export class UserGuard implements CanActivate {
   }
 
   matchRoles(roles: string[], userRole: Role): boolean {
-    if (roles.some((role) => role === userRole.name)) {
-      return true;
-    }
-    return false;
+    if (userRole.name === 'super_admin') return true;
+    return roles.some((role) => role === userRole.name);
   }
 }

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { seedAdmin } from './admin-seed';
 import { seedRoles } from './role-seed';
+import { seedSuperAdmin } from './super-admin-seed';
 import { seedTimeEntryStatuses } from './time-entry-status.seed';
 import { seedLeaveTypes } from './leave-type.seed';
 import { seedLeaveStatuses } from './leave-status.seed';
@@ -12,6 +13,7 @@ async function main() {
   console.log('🚀 Starting Seeds...');
 
   await seedRoles();
+  await seedSuperAdmin();
   await seedAdmin();
   await seedTimeEntryStatuses();
   await seedLeaveTypes();
