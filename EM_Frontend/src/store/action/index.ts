@@ -10,6 +10,7 @@ import {
   useGetSingleEmployeeMutation,
   useEditEmployeeMutation,
   useDeleteEmployeeMutation,
+  useLazyGetEmployeeEmailLogsQuery,
 } from "@/src/store/action/employee/employee";
 
 import {
@@ -25,5 +26,6 @@ export {
   useLazyGetEmployeesQuery,
   useEditEmployeeMutation,
   useDeleteEmployeeMutation,
-  useAddTimeEntryMutation
+  useAddTimeEntryMutation,
+  useLazyGetEmployeeEmailLogsQuery,
 };

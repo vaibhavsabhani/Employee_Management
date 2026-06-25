@@ -93,4 +93,10 @@ export class UserController {
   ) {
     return this.userService.remove(id);
   }
+
+  @Get(':id/email-logs')
+  @Roles('super_admin')
+  getEmailLogs(@Param('id') id: string) {
+    return this.userService.getEmailLogs(id);
+  }
 }

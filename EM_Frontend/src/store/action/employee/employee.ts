@@ -17,6 +17,8 @@ export const employeeApi = createApi({
     prepareHeaders,
   }),
 
+  tagTypes: ["MyProfile"],
+
   endpoints: (builder) => ({
     getEmployees: builder.query<any, FilterQueryArg>({
       query: ({ filters = {}, page = 1, limit = 10, offset }) => {
@@ -112,10 +114,19 @@ export const employeeApi = createApi({
 
     getMyProfile: builder.query({
       query: () => ({ url: "/user/me", method: "GET" }),
+      providesTags: ["MyProfile"],
     }),
 
     updateMyProfile: builder.mutation({
       query: (body) => ({ url: "/user/me", method: "PATCH", body }),
+      invalidatesTags: ["MyProfile"],
+    }),
+
+    getEmployeeEmailLogs: builder.query({
+      query: (employeeId: string) => ({
+        url: `/user/${employeeId}/email-logs`,
+        method: "GET",
+      }),
     }),
   }),
 });
@@ -130,4 +141,5 @@ export const {
   useLazyGetMyProfileQuery,
   useGetMyProfileQuery,
   useUpdateMyProfileMutation,
+  useLazyGetEmployeeEmailLogsQuery,
 } = employeeApi;

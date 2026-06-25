@@ -88,6 +88,7 @@ export class UserService {
         user.email,
         `${user.firstName} ${user.lastName}`,
         defaultPassword,
+        user.id,
       );
     } catch (mailError) {
       console.error('Failed to send welcome email:', mailError);
@@ -239,6 +240,7 @@ export class UserService {
         ...(dto.address !== undefined && { address: dto.address?.trim() || null }),
         ...(dto.panNumber !== undefined && { panNumber: dto.panNumber?.toUpperCase() || null }),
         ...(dto.aadhaarNumber !== undefined && { aadhaarNumber: dto.aadhaarNumber || null }),
+        ...(dto.profilePicture !== undefined && { profilePicture: dto.profilePicture || null }),
       },
       include: { role: true },
     });
@@ -320,5 +322,20 @@ export class UserService {
       success: true,
       message: 'User deactivated successfully',
     };
+  }
+
+  async getEmailLogs(userId: string) {
+    const logs = await this.prisma.emailLog.findMany({
+      where: { userId },
+      orderBy: { sentAt: 'desc' },
+      select: {
+        id: true,
+        to: true,
+        subject: true,
+        body: true,
+        sentAt: true,
+      },
+    });
+    return { data: logs };
   }
 }

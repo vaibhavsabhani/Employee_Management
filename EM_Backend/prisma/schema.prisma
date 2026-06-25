@@ -50,6 +50,7 @@ model User {
   markedAttendances   Attendance[]         @relation("AdminMarkedAttendances")
   notifications       Notification[]       @relation("UserNotifications")
   activityLogs        UserActivityLog[]    @relation("UserActivityLogs")
+  emailLogs           EmailLog[]           @relation("UserEmailLogs")
 
   @@index([roleId])
   @@map("users")
@@ -242,4 +243,17 @@ model Notification {
 
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+model EmailLog {
+  id        String   @id @default(uuid()) @map("id")
+  userId    String   @map("user_id")
+  user      User     @relation("UserEmailLogs", fields: [userId], references: [id], onDelete: Cascade)
+  to        String   @map("to")
+  subject   String   @map("subject")
+  body      String   @map("body") @db.Text
+  sentAt    DateTime @default(now()) @map("sent_at")
+
+  @@index([userId])
+  @@map("email_logs")
 }

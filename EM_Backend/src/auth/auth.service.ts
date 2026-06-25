@@ -175,8 +175,7 @@ export class AuthService {
     const frontendUrl =
       process.env.FRONTEND_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
     const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
-
-    await this.mailService.sendPasswordResetEmail(user.email, resetLink);
+    await this.mailService.sendPasswordResetEmail(user.email, resetLink, user.id);
 
     return {
       success: true,
@@ -198,23 +197,36 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
+    const user = await this.prisma.user.findUnique({
+      where: { id: resetToken.userId },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await this.prisma.$transaction([
       this.prisma.user.update({
-        where: {
-          id: resetToken.userId,
-        },
-        data: {
-          password: hashedPassword,
-        },
+        where: { id: resetToken.userId },
+        data: { password: hashedPassword },
       }),
       this.prisma.passwordResetToken.deleteMany({
-        where: {
-          userId: resetToken.userId,
-        },
+        where: { userId: resetToken.userId },
       }),
     ]);
+
+    try {
+      await this.mailService.sendPasswordChangedEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+        newPassword,
+        user.id,
+      );
+    } catch (mailError) {
+      console.error('Failed to send password changed email:', mailError);
+    }
 
     return {
       success: true,

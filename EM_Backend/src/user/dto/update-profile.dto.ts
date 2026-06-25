@@ -46,4 +46,9 @@ export class UpdateProfileDto {
   @Length(12, 12, { message: 'Aadhaar number must be 12 digits' })
   @Matches(/^\d{12}$/, { message: 'Aadhaar number must contain only digits' })
   aadhaarNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  profilePicture?: string;
 }
