@@ -15,5 +15,7 @@ export default function Home() {
 
   if (role === null) return null;
 
-  return role === ROLES.ADMIN ? <AdminDashboard /> : <EmployeeDashboard />;
+  const isAdmin = role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
+
+  return isAdmin ? <AdminDashboard /> : <EmployeeDashboard />;
 }

@@ -63,7 +63,7 @@ const navigation = [
     label: "Attendance",
     href: "/attendance",
     icon: ClipboardList,
-    accessRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    accessRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EMPLOYEE],
   },
   {
     label: "Activity Logs",

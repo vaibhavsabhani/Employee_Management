@@ -144,7 +144,7 @@ const Page = () => {
                   control={form.control}
                   name="date"
                   label="Date"
-                  minDate={new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)}
+                  minDate={new Date(Date.now())}
                   maxDate={new Date()}
                   isRequired
                 />

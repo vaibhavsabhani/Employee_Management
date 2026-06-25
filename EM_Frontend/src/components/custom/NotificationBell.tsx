@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, BellRing, Check } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { getCookie } from "@/src/lib/cookieStorage";
+import { ROLES } from "@/src/constant/role";
 import {
   useLazyGetNotificationsQuery,
   useMarkAllReadMutation,
@@ -21,6 +23,7 @@ type Notification = {
   type: string;
   isRead: boolean;
   createdAt: string;
+  data?: Record<string, any> | null;
 };
 
 export function NotificationBell() {
@@ -29,6 +32,7 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const socketRef = useRef<Socket | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const [fetchNotifications] = useLazyGetNotificationsQuery();
   const [markRead] = useMarkReadMutation();
@@ -101,6 +105,33 @@ export function NotificationBell() {
     } catch {}
   };
 
+  const getNotificationHref = (n: Notification): string | null => {
+    const d = n.data ?? {};
+    const role = getCookie("role") ?? "";
+    const isAdmin = role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
+
+    // Leave: admins approve/reject from the list, employees view their requests there too.
+    if (n.type.startsWith("leave")) return "/leave";
+
+    // Time entry: admins review from the list; employees resubmit a rejected entry via its form.
+    if (n.type.startsWith("time_entry")) {
+      if (!isAdmin && n.type === "time_entry_rejected" && d.timeEntryId) {
+        return `/time-entry/${d.timeEntryId}`;
+      }
+      return "/time-entry";
+    }
+
+    if (n.type === "attendance_marked") return "/attendance";
+    return null;
+  };
+
+  const handleNotificationClick = (n: Notification) => {
+    if (!n.isRead) handleMarkRead(n.id);
+    const href = getNotificationHref(n);
+    setIsOpen(false);
+    if (href) router.push(href);
+  };
+
   const handleMarkAllRead = async () => {
     try {
       await markAllRead(undefined).unwrap();
@@ -126,7 +157,7 @@ export function NotificationBell() {
   return (
     <div className="relative flex items-center" ref={dropdownRef}>
       <button
-        className="relative flex items-center text-muted-foreground transition hover:text-foreground"
+        className="relative flex items-center text-muted-foreground transition hover:text-foreground cursor-pointer"
         type="button"
         aria-label="Notifications"
         onClick={() => setIsOpen((o) => !o)}
@@ -144,7 +175,7 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl border border-notif-panel-ring bg-notif-panel shadow-xl overflow-hidden">
+        <div className="fixed inset-x-3 top-16 z-50 rounded-xl border border-notif-panel-ring bg-notif-panel shadow-xl overflow-hidden sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-notif-panel-ring">
             <div className="flex items-center gap-2">
@@ -182,7 +213,7 @@ export function NotificationBell() {
                   className={`px-4 py-3 cursor-pointer hover:bg-notif-hover transition-colors ${
                     !n.isRead ? "bg-notif-unread" : ""
                   }`}
-                  onClick={() => !n.isRead && handleMarkRead(n.id)}
+                  onClick={() => handleNotificationClick(n)}
                 >
                   <div className="flex items-start gap-2.5">
                     <div

@@ -9,6 +9,9 @@ export const attendanceApi = createApi({
     getAttendance: builder.query({
       query: (params) => ({ url: "/attendance", method: "GET", params }),
     }),
+    getMyAttendance: builder.query({
+      query: (params) => ({ url: "/attendance/me", method: "GET", params }),
+    }),
     markAttendance: builder.mutation({
       query: (body: { employeeId: string; date: string; statusId: number; notes?: string }) => ({
         url: "/attendance/mark",
@@ -19,4 +22,8 @@ export const attendanceApi = createApi({
   }),
 });
 
-export const { useLazyGetAttendanceQuery, useMarkAttendanceMutation } = attendanceApi;
+export const {
+  useLazyGetAttendanceQuery,
+  useMarkAttendanceMutation,
+  useLazyGetMyAttendanceQuery,
+} = attendanceApi;

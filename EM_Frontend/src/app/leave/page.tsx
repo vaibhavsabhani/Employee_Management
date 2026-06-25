@@ -15,7 +15,9 @@ const Page = () => {
 
   if (role === null) return null;
 
-  return role === ROLES.ADMIN ? <AdminLeavePage /> : <LeavePage />;
+  const isAdmin = role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
+
+  return isAdmin ? <AdminLeavePage /> : <LeavePage />;
 };
 
 export default Page;

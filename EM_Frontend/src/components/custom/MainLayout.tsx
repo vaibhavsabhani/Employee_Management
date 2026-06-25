@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider } from "../ui/sidebar";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/src/lib/cookieStorage";
 import { useGetMyProfileQuery } from "@/src/store/action/employee/employee";
+import { isRouteAllowed } from "@/src/constant/routeAccess";
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -28,8 +29,15 @@ export function MainLayout({ children }: MainLayoutProps) {
     const token = getCookie("accessToken");
     if (!token) {
       router.replace("/login");
+      return;
     }
-    setUserRole(getCookie("role"));
+    const role = getCookie("role");
+    setUserRole(role);
+
+    // Block direct-URL access to routes the current role isn't allowed on.
+    if (!isRouteAllowed(pathname, role)) {
+      router.replace("/");
+    }
   }, [router, pathname]);
 
   const isAuthRoute = authRoutes.some(
@@ -49,6 +57,9 @@ export function MainLayout({ children }: MainLayoutProps) {
     return <>{children}</>;
   }
 
+  // Don't render the page while an unauthorized role is being redirected away.
+  const authorized = isRouteAllowed(pathname, userRole);
+
   return (
     <SidebarProvider>
       <AppSidebar pathname={pathname} userRole={userRole ?? undefined} />
@@ -61,7 +72,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         />
 
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
-          <div className="mx-auto w-full">{children}</div>
+          <div className="mx-auto w-full">{authorized ? children : null}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -171,14 +171,14 @@ export default function EmployeeDashboard() {
           <button
             type="button"
             onClick={() => router.push("/time-entry/add")}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-linear-to-r from-violet-600 to-violet-700 text-white text-sm font-semibold hover:from-violet-700 hover:to-violet-800 transition-all shadow-lg shadow-violet-500/25"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-linear-to-r from-violet-600 to-violet-700 text-white text-sm font-semibold hover:from-violet-700 hover:to-violet-800 transition-all shadow-lg shadow-violet-500/25 cursor-pointer"
           >
             <Plus className="size-4" /> Log Hours
           </button>
           <button
             type="button"
             onClick={() => router.push("/leave/add")}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card text-foreground text-sm font-semibold hover:bg-muted transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card text-foreground text-sm font-semibold hover:bg-muted transition-colors cursor-pointer"
           >
             <CalendarDays className="size-4" /> Apply Leave
           </button>

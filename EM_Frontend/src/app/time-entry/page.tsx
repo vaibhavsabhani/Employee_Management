@@ -15,11 +15,9 @@ const Page = () => {
 
   if (role === null) return null;
 
-  return role === ROLES.ADMIN ? (
-    <AdminTimeEntryPage />
-  ) : (
-    <TimeEntryPage />
-  );
+  const isAdmin = role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
+
+  return isAdmin ? <AdminTimeEntryPage /> : <TimeEntryPage />;
 };
 
 export default Page;

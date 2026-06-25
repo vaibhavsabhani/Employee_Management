@@ -199,6 +199,115 @@ export class AttendanceService {
     };
   }
 
+  async getMyAttendance(employeeId: string, query: { month?: string }) {
+    const now = new Date();
+    const monthStr =
+      query.month ||
+      `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+
+    const [year, month] = monthStr.split('-').map(Number);
+
+    const firstDay = new Date(Date.UTC(year, month - 1, 1));
+    const lastDayOfMonth = new Date(Date.UTC(year, month, 0));
+    const todayUtc = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+
+    const emptyStats = {
+      totalDays: 0,
+      present: 0,
+      absent: 0,
+      onLeave: 0,
+      notMarked: 0,
+    };
+
+    // Whole month is in the future — nothing to show yet.
+    if (firstDay > todayUtc) {
+      return { success: true, month: monthStr, data: [], stats: emptyStats };
+    }
+
+    const endDay = lastDayOfMonth > todayUtc ? todayUtc : lastDayOfMonth;
+    const rangeEnd = new Date(endDay);
+    rangeEnd.setUTCHours(23, 59, 59, 999);
+
+    const [attendances, leaves] = await Promise.all([
+      this.prisma.attendance.findMany({
+        where: {
+          employeeId,
+          date: { gte: firstDay, lte: rangeEnd },
+          isActive: true,
+        },
+        include: {
+          status: true,
+          markedBy: { select: { firstName: true, lastName: true } },
+        },
+      }),
+      this.prisma.leave.findMany({
+        where: {
+          employeeId,
+          statusId: 2,
+          isActive: true,
+          startDate: { lte: rangeEnd },
+          endDate: { gte: firstDay },
+        },
+        include: { leaveType: true },
+      }),
+    ]);
+
+    const dateKey = (d: Date) =>
+      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+
+    const attendanceMap = new Map(attendances.map((a) => [dateKey(a.date), a]));
+
+    const stats = { totalDays: 0, present: 0, absent: 0, onLeave: 0, notMarked: 0 };
+    const data: any[] = [];
+
+    // Walk each day from most recent back to the start of the month.
+    for (let t = endDay.getTime(); t >= firstDay.getTime(); t -= 86400000) {
+      const day = new Date(t);
+      const dayStart = new Date(t);
+      const dayEnd = new Date(t);
+      dayEnd.setUTCHours(23, 59, 59, 999);
+
+      const leave = leaves.find(
+        (l) => l.startDate <= dayEnd && l.endDate >= dayStart,
+      );
+      const attendance = attendanceMap.get(dateKey(day)) || null;
+
+      let effectiveStatus: 'present' | 'absent' | 'on-leave' | 'not-marked';
+      let leaveType: any = null;
+      let markedBy: any = null;
+
+      if (leave) {
+        effectiveStatus = 'on-leave';
+        leaveType = leave.leaveType;
+        stats.onLeave++;
+      } else if (attendance?.statusId === 1) {
+        effectiveStatus = 'present';
+        markedBy = attendance.markedBy;
+        stats.present++;
+      } else if (attendance?.statusId === 2) {
+        effectiveStatus = 'absent';
+        markedBy = attendance.markedBy;
+        stats.absent++;
+      } else {
+        effectiveStatus = 'not-marked';
+        stats.notMarked++;
+      }
+
+      stats.totalDays++;
+      data.push({
+        date: dateKey(day),
+        effectiveStatus,
+        leaveType,
+        markedBy,
+        notes: attendance?.notes ?? null,
+      });
+    }
+
+    return { success: true, month: monthStr, data, stats };
+  }
+
   private emptyResponse(dateStr: string, total: number) {
     return {
       success: true,

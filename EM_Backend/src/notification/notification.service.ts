@@ -29,12 +29,16 @@ export class NotificationService {
     type: string,
     data?: Record<string, any>,
   ) {
-    const adminRole = await this.prisma.role.findUnique({
-      where: { name: 'admin' },
+    const adminRoles = await this.prisma.role.findMany({
+      where: { name: { in: ['admin', 'super_admin'] } },
+      select: { id: true },
     });
-    if (!adminRole) return;
+    if (!adminRoles.length) return;
     const admins = await this.prisma.user.findMany({
-      where: { isActive: true, roleId: adminRole.id },
+      where: {
+        isActive: true,
+        roleId: { in: adminRoles.map((r) => r.id) },
+      },
       select: { id: true },
     });
     await Promise.all(
