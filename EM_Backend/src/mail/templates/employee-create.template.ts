@@ -2,6 +2,7 @@ export const employeeCreatedTemplate = (
   employeeName: string,
   email: string,
   password: string,
+  loginUrl: string,
 ): string => `
 <!DOCTYPE html>
 <html>
@@ -185,6 +186,36 @@ export const employeeCreatedTemplate = (
                       For security reasons, please change your password
                       immediately after your first login.
                     </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Login Button -->
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                style="margin-top:28px;"
+              >
+                <tr>
+                  <td align="center">
+                    <a
+                      href="${loginUrl}"
+                      style="
+                        display:inline-block;
+                        padding:14px 36px;
+                        background:#1d4ed8;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:12px;
+                        font-size:15px;
+                        font-weight:700;
+                        box-shadow:0 12px 24px rgba(29,78,216,0.22);
+                      "
+                    >
+                      Login to Your Account
+                    </a>
                   </td>
                 </tr>
               </table>

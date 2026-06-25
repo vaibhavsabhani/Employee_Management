@@ -9,12 +9,14 @@ export class MailService {
   private readonly apiKey: string;
   private readonly senderEmail: string;
   private readonly senderName: string;
+  private readonly frontendUrl: string;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('BREVO_API_KEY')!;
     this.senderEmail = this.configService.get<string>('BREVO_SENDER_EMAIL')!;
     this.senderName =
       this.configService.get<string>('BREVO_SENDER_NAME') || 'Employee Management';
+    this.frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
   }
 
   async sendMail(to: string, subject: string, html: string): Promise<void> {
@@ -52,7 +54,7 @@ export class MailService {
     await this.sendMail(
       email,
       'Your Employee Account Has Been Created',
-      employeeCreatedTemplate(employeeName, email, password),
+      employeeCreatedTemplate(employeeName, email, password, this.frontendUrl),
     );
   }
 }
