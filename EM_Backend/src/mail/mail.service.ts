@@ -11,7 +11,7 @@ export class MailService {
   private readonly senderName: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('BREVO_SMTP_KEY')!;
+    this.apiKey = this.configService.get<string>('BREVO_API_KEY')!;
     this.senderEmail = this.configService.get<string>('BREVO_SENDER_EMAIL')!;
     this.senderName =
       this.configService.get<string>('BREVO_SENDER_NAME') || 'Employee Management';
