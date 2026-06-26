@@ -2,25 +2,20 @@ import { toast } from "sonner";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
-export const Toast = (
-   res: any,
-  type: ToastType = "success"
-) => {
+export const Toast = (res: any, type: ToastType = "success") => {
+  const message =
+    res?.data?.message ||
+    res?.message ||
+    res?.error?.data?.message ||
+    res?.error?.data?.message;
+
   switch (type) {
     case "success":
-      toast.success(res?.data?.message || res?.message || "Operation completed successfully");
+      toast.success(message);
       break;
 
     case "error":
-      toast.error(res?.error?.data?.message || res?.error?.data?.message || "An error occurred");
-      break;
-
-    case "warning":
-      toast.warning(res?.warning?.data?.message || "A warning occurred");
-      break;
-
-    case "info":
-      toast.info(res?.info?.data?.message || "Information available");
+      toast.error(message);
       break;
 
     default:

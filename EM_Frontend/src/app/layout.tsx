@@ -37,7 +37,7 @@ export default function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <Providers>
           <TooltipProvider>
-            <Toaster position="top-right" />
+            <Toaster />
             <MainLayout>{children}</MainLayout>
           </TooltipProvider>
         </Providers>
