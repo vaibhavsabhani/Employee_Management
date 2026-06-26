@@ -1,3 +1,5 @@
+"use client";
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -25,14 +27,14 @@ export const getPageTitle = (pathname: string) => {
 
 const SEGMENT_LABELS: Record<string, string> = {
   "": "Dashboard",
-  "employees": "Employees",
+  employees: "Employees",
   "time-entry": "Time Entry",
-  "leave": "Leave",
-  "attendance": "Attendance",
-  "settings": "Settings",
-  "profile": "Profile",
-  "add": "Add",
-  "edit": "Edit",
+  leave: "Leave",
+  attendance: "Attendance",
+  settings: "Settings",
+  profile: "Profile",
+  add: "Add",
+  edit: "Edit",
 };
 
 const UUID_RE =
@@ -41,9 +43,7 @@ const UUID_RE =
 function toLabel(segment: string): string {
   if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment];
   if (UUID_RE.test(segment) || /^\d+$/.test(segment)) return "Detail";
-  return segment
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export type BreadcrumbItem = { label: string; href?: string };
@@ -63,3 +63,6 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
   return crumbs;
 }
+
+export const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
