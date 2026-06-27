@@ -30,16 +30,22 @@ import { DataTable } from "@/src/components/custom/DataTable";
 import { PageHeader } from "@/src/components/custom/PageHeader";
 import Filter from "@/src/components/custom/filters";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogTitle,
 } from "@/src/components/ui/dialog";
+import { useRole } from "@/src/hooks/useRole";
+import { ROLES } from "@/src/constant/role";
+import EmployeeFilter, { DraftFilters } from "./EmployeeFilter";
+import { FilterTabs } from "@/src/components/custom/FilterTabs";
+import { ViewDetailsDialog } from "@/src/components/custom/ViewDetailsDialog";
+import { employeeDialogConfig } from "./employeeConfig";
+import { initials } from "@/src/lib/utils";
 
 /* ── types ─────────────────────────────────────────────── */
-type Employee = {
+export type Employee = {
   id: string;
   firstName: string;
   middleName?: string;
@@ -56,12 +62,6 @@ type Employee = {
 };
 
 /* ── helpers ─────────────────────────────────────────────── */
-function initials(emp: Pick<Employee, "firstName" | "lastName">) {
-  return [emp.firstName?.[0], emp.lastName?.[0]]
-    .filter(Boolean)
-    .join("")
-    .toUpperCase();
-}
 
 function Avatar({
   emp,
@@ -94,32 +94,6 @@ function Avatar({
   );
 }
 
-function DetailRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value?: string | null;
-}) {
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border/60 last:border-0">
-      <div className="mt-0.5 p-1.5 rounded-md bg-muted">
-        <Icon className="size-3.5 text-muted-foreground" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-        <p className="text-sm text-foreground mt-0.5 break-all">
-          {value || <span className="text-muted-foreground/60 italic">—</span>}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 /* ── status tabs ─────────────────────────────────────────── */
 const STATUS_TABS = [
   { label: "Active", value: "true" },
@@ -127,112 +101,31 @@ const STATUS_TABS = [
   { label: "All", value: "all" },
 ];
 
-/* ── filter panel ────────────────────────────────────────── */
-type DraftFilters = { search: string; email: string; isActive: string };
-const defaultDraft: DraftFilters = { search: "", email: "", isActive: "true" };
-
-const EmployeeFilterPanel = ({
-  draft,
-  setDraft,
-  onApply,
-  onReset,
-}: {
-  draft: DraftFilters;
-  setDraft: React.Dispatch<React.SetStateAction<DraftFilters>>;
-  onApply: () => void;
-  onReset: () => void;
-  closeFilter?: () => void;
-}) => (
-  <div className="flex flex-col xl:flex-row xl:items-end gap-4 p-3 w-full">
-    {/* Name search */}
-    <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">
-        Search by Name
-      </label>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-        <Input
-          placeholder="First or last name…"
-          value={draft.search}
-          onChange={(e) => setDraft((p) => ({ ...p, search: e.target.value }))}
-          className="pl-9"
-        />
-      </div>
-    </div>
-
-    {/* Email search */}
-    <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">
-        Search by Email
-      </label>
-      <div className="relative">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-        <Input
-          placeholder="Email address…"
-          value={draft.email}
-          onChange={(e) => setDraft((p) => ({ ...p, email: e.target.value }))}
-          className="pl-9"
-        />
-      </div>
-    </div>
-
-    {/* Status toggle */}
-    {/* <div className="shrink-0">
-      <label className="block text-sm font-semibold mb-1.5">Status</label>
-      <div className="flex rounded-md overflow-hidden border border-border">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => setDraft((p) => ({ ...p, isActive: tab.value }))}
-            className={`px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
-              draft.isActive === tab.value
-                ? "bg-sidebar-primary text-white"
-                : "bg-background text-foreground hover:bg-accent"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-    </div> */}
-
-    {/* Buttons */}
-    <div className="flex gap-3 shrink-0 xl:pb-0 pb-1">
-      <Button
-        type="button"
-        onClick={onApply}
-        className="h-10 px-6 bg-sidebar-primary hover:bg-violet-700 text-white"
-      >
-        Apply Filter
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onReset}
-        className="h-10 px-6"
-      >
-        Reset
-      </Button>
-    </div>
-  </div>
-);
-
-/* ── page ─────────────────────────────────────────────────── */
-const defaultEmployeeFilters = { search: "", email: "", isActive: "true" , role: "employee" };
-
 const EmployeePage = () => {
   const router = useRouter();
+  const role = useRole();
+  const isSuperAdmin = role === ROLES.SUPER_ADMIN;
+
   const [getEmployees] = useLazyGetEmployeesQuery();
-  const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation();
-  const [editEmployee, { isLoading: isReactivating }] = useEditEmployeeMutation();
+  const [deleteEmployee, { isLoading: isDeleting }] =
+    useDeleteEmployeeMutation();
+  const [editEmployee, { isLoading: isReactivating }] =
+    useEditEmployeeMutation();
 
   const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
-  const [reactivateTarget, setReactivateTarget] = useState<Employee | null>(null);
-  const [draft, setDraft] = useState<DraftFilters>(defaultDraft);
+  const [reactivateTarget, setReactivateTarget] = useState<Employee | null>(
+    null,
+  );
+  const defaultEmployeeFilters = {
+    search: "",
+    email: "",
+    isActive: "true",
+    role: isSuperAdmin ? "" : ROLES.EMPLOYEE,
+  };
 
-  /* ── pagination ── */
+  const [draft, setDraft] = useState<DraftFilters>(defaultEmployeeFilters);
+
   const fetchEmployeeData = useCallback(
     ({ page, limit, ...filters }: any) =>
       getEmployees({ page, limit, filters }).unwrap(),
@@ -265,19 +158,17 @@ const EmployeePage = () => {
     transformResponse: transformEmployeeResponse,
   });
 
-  /* ── filter handlers ── */
   const handleApply = () => {
     resetLimit();
     updateFilters({ ...(filters as any), ...draft });
   };
 
   const handleReset = () => {
-    setDraft(defaultDraft);
+    setDraft(defaultEmployeeFilters);
     resetLimit();
     updateFilters(defaultEmployeeFilters);
   };
 
-  /* ── delete handler ── */
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
@@ -290,11 +181,13 @@ const EmployeePage = () => {
     }
   };
 
-  /* ── reactivate handler ── */
   const handleReactivate = async () => {
     if (!reactivateTarget) return;
     try {
-      const res = await editEmployee({ employeeId: reactivateTarget.id, body: { isActive: true } }).unwrap();
+      const res = await editEmployee({
+        employeeId: reactivateTarget.id,
+        body: { isActive: true },
+      }).unwrap();
       Toast(res, "success");
       setReactivateTarget(null);
       refetch();
@@ -303,10 +196,8 @@ const EmployeePage = () => {
     }
   };
 
-  /* ── active status tabs (applied) ── */
   const activeIsActive = (filters as any)?.isActive ?? "true";
 
-  /* ── columns ── */
   const employeeColumns: ColumnDef<any>[] = [
     {
       id: "name",
@@ -419,9 +310,8 @@ const EmployeePage = () => {
         }
       />
 
-      {/* ── Filter Panel ────────────────────────────────── */}
       <Filter>
-        <EmployeeFilterPanel
+        <EmployeeFilter
           draft={draft}
           setDraft={setDraft}
           onApply={handleApply}
@@ -429,27 +319,17 @@ const EmployeePage = () => {
         />
       </Filter>
 
-      {/* ── Quick status tabs ─────────────────────────── */}
-      <div className="flex gap-2 flex-wrap" id="employee-status-tabs">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => {
-              const newDraft = { ...draft, isActive: tab.value };
-              setDraft(newDraft);
-              resetLimit();
-              updateFilters({ ...(filters as any), ...newDraft });
-            }}
-            className={`cursor-pointer px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-              activeIsActive === tab.value
-                ? "bg-sidebar-primary text-white border-sidebar-primary"
-                : "bg-pill-bg text-pill-fg border-pill-ring hover:border-violet-400 hover:text-violet-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="flex gap-2 flex-wrap">
+        <FilterTabs
+          tabs={STATUS_TABS}
+          activeValue={activeIsActive}
+          onChange={(value) => {
+            const newDraft = { ...draft, isActive: value };
+            setDraft(newDraft);
+            resetLimit();
+            updateFilters({ ...(filters as any), ...newDraft });
+          }}
+        />
       </div>
 
       <DataTable
@@ -465,120 +345,25 @@ const EmployeePage = () => {
         totalRecords={total}
         limit={limit}
         setLimit={setLimit}
-        showExtraHeader={["employee-status-tabs", "pageHeading"]}
+        showExtraHeader={["employee-status-tabs", "pageHeading", "FilterTabs"]}
       />
 
-      {/* ── View Dialog ─────────────────────────────────── */}
-      <Dialog
+      <ViewDetailsDialog
         open={!!viewEmployee}
-        onOpenChange={(o) => !o && setViewEmployee(null)}
-      >
-        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-          {/* Coloured header */}
-          <div className="bg-linear-to-br from-violet-600 to-violet-800 px-6 pt-8 pb-12 flex flex-col items-center gap-3">
-            <div className="h-16 w-16 rounded-full ring-4 ring-white/30 overflow-hidden">
-              {viewEmployee?.profilePicture ? (
-                <img
-                  src={viewEmployee.profilePicture}
-                  alt={initials(viewEmployee)}
-                  className="size-full object-cover"
-                />
-              ) : (
-                <div className="size-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold backdrop-blur-sm">
-                  {viewEmployee ? initials(viewEmployee) : ""}
-                </div>
-              )}
-            </div>
-            <div className="text-center">
-              <DialogTitle className="text-lg font-bold text-white">
-                {[
-                  viewEmployee?.firstName,
-                  viewEmployee?.middleName,
-                  viewEmployee?.lastName,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              </DialogTitle>
-              <p className="text-sm text-white/70 mt-0.5 capitalize">
-                {viewEmployee?.role?.name ?? "Employee"}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                  viewEmployee?.isActive
-                    ? "bg-green-400/20 text-green-100 ring-1 ring-green-300/40"
-                    : "bg-red-400/20 text-red-100 ring-1 ring-red-300/40"
-                }`}
-              >
-                {viewEmployee?.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
-          </div>
-
-          {/* Details card pulled up */}
-          <div className="-mt-6 rounded-t-3xl bg-popover px-6 pt-5 pb-2">
-            <DetailRow icon={Mail} label="Email" value={viewEmployee?.email} />
-            <DetailRow
-              icon={Phone}
-              label="Phone Number"
-              value={viewEmployee?.phoneNumber}
-            />
-            <DetailRow
-              icon={CreditCard}
-              label="PAN Number"
-              value={viewEmployee?.panNumber}
-            />
-            <DetailRow
-              icon={Fingerprint}
-              label="Aadhaar Number"
-              value={viewEmployee?.aadhaarNumber}
-            />
-            <DetailRow
-              icon={MapPin}
-              label="Address"
-              value={viewEmployee?.address}
-            />
-            <DetailRow
-              icon={CalendarDays}
-              label="Joined"
-              value={
-                viewEmployee?.createdAt
-                  ? new Date(viewEmployee.createdAt).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      },
-                    )
-                  : undefined
-              }
-            />
-          </div>
-
-          {/* Footer */}
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setViewEmployee(null)}
-            >
-              Close
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                router.push(`/employees/${viewEmployee?.id}`);
-                setViewEmployee(null);
-              }}
-            >
-              <Pencil className="size-3" />
-              Edit Employee
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => setViewEmployee(null)}
+        config={
+          employeeDialogConfig(viewEmployee) ?? {
+            initials: "",
+            title: "",
+            fields: [],
+          }
+        }
+        editLabel="Edit Employee"
+        onEdit={() => {
+          router.push(`/employees/${viewEmployee?.id}`);
+          setViewEmployee(null);
+        }}
+      />
 
       {/* ── Delete Confirm Dialog ────────────────────────── */}
       <ConfirmDialog

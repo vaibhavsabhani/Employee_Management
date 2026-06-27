@@ -2,6 +2,7 @@
 
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { Employee } from "../app/employees/EmployeePage";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -66,3 +67,10 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
 export const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+
+export const initials = (emp: Pick<Employee, "firstName" | "lastName">) => {
+  return [emp.firstName?.[0], emp.lastName?.[0]]
+    .filter(Boolean)
+    .join("")
+    .toUpperCase();
+};

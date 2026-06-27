@@ -1,18 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ROLES } from "@/src/constant/role";
-import { getCookie } from "@/src/lib/cookieStorage";
 import AdminDashboard from "./dashboard/AdminDashboard";
 import EmployeeDashboard from "./dashboard/EmployeeDashboard";
+import { useRole } from "../hooks/useRole";
 
 export default function Home() {
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setRole(getCookie("role") ?? "");
-  }, []);
-
+  const role = useRole();
   if (role === null) return null;
 
   const isAdmin = role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;

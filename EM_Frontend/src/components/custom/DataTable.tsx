@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
     measuredElements.push(...showExtraHeader);
   }
 
-  const totalOffset = useDynamicHeight(measuredElements, 75);
+  const totalOffset = useDynamicHeight(measuredElements, 130);
   const finalHeight = maxHeight || `calc(100vh - ${totalOffset}px)`;
 
   // Use "auto" until mounted to match the server-rendered HTML and avoid hydration mismatch
