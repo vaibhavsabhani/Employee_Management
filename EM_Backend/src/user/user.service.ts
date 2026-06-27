@@ -33,6 +33,7 @@ export class UserService {
       address,
       panNumber,
       aadhaarNumber,
+      countryCode,
     } = createUserDto;
 
     if (!role) {
@@ -77,6 +78,7 @@ export class UserService {
         panNumber: panNumber?.toUpperCase() || null,
         aadhaarNumber: aadhaarNumber || null,
         roleId: roleData.id,
+        countryCode: countryCode || null,
       },
       include: {
         role: true,
@@ -236,6 +238,7 @@ export class UserService {
         ...(dto.firstName && { firstName: dto.firstName.trim() }),
         ...(dto.middleName !== undefined && { middleName: dto.middleName?.trim() || null }),
         ...(dto.lastName && { lastName: dto.lastName.trim() }),
+        ...(dto.countryCode !== undefined && { countryCode: dto.countryCode || null }),
         ...(dto.phoneNumber !== undefined && { phoneNumber: dto.phoneNumber || null }),
         ...(dto.address !== undefined && { address: dto.address?.trim() || null }),
         ...(dto.panNumber !== undefined && { panNumber: dto.panNumber?.toUpperCase() || null }),
@@ -278,6 +281,7 @@ export class UserService {
         ...(rest.middleName !== undefined && { middleName: rest.middleName }),
         ...(rest.lastName !== undefined && { lastName: rest.lastName }),
         ...(rest.email && { email: rest.email.toLowerCase().trim() }),
+        ...(rest.countryCode !== undefined && { countryCode: rest.countryCode }),
         ...(rest.phoneNumber !== undefined && { phoneNumber: rest.phoneNumber }),
         ...(rest.profilePicture !== undefined && { profilePicture: rest.profilePicture }),
         ...(rest.address !== undefined && { address: rest.address }),

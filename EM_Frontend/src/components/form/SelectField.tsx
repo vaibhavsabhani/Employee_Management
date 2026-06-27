@@ -31,6 +31,7 @@ type BaseProps = {
   placeholder?: string;
   description?: string;
   disabled?: boolean;
+  className?: string;
 };
 
 type FormSelectProps<T extends FieldValues> = BaseProps & {
@@ -63,8 +64,8 @@ export function SelectField<T extends FieldValues>(props: SelectFieldProps<T>) {
       </SelectTrigger>
 
       <SelectContent>
-        {props.options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+        {props.options.map((option,index) => (
+          <SelectItem key={`option.value-${index}`} value={option.value}>
             {option.label}
           </SelectItem>
         ))}
@@ -78,7 +79,7 @@ export function SelectField<T extends FieldValues>(props: SelectFieldProps<T>) {
         control={props.control}
         name={props.name}
         render={({ field }) => (
-          <FormItem>
+          <FormItem className={props.className}>
             {props.label && (
               <FormLabel required={props.required}>{props.label}</FormLabel>
             )}
@@ -99,7 +100,7 @@ export function SelectField<T extends FieldValues>(props: SelectFieldProps<T>) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${props.className || ""}`}>
       {props.label && (
         <label className="text-sm font-medium">{props.label}</label>
       )}

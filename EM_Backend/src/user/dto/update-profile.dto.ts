@@ -22,6 +22,11 @@ export class UpdateProfileDto {
   @IsString()
   lastName?: string;
 
+  @ApiPropertyOptional({ example: '+91' })
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

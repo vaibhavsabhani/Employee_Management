@@ -36,7 +36,9 @@ export const employeeDialogConfig = (viewEmployee: Employee | null) =>
           {
             icon: Phone,
             label: "Phone Number",
-            value: viewEmployee.phoneNumber,
+            value: [viewEmployee.countryCode, viewEmployee.phoneNumber]
+              .filter(Boolean)
+              .join(" ") || undefined,
           },
           {
             icon: CreditCard,

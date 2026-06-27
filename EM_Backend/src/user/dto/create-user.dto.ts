@@ -27,6 +27,13 @@ export class CreateUserDto {
   @IsEmail()
   email!: string;
 
+  @ApiPropertyOptional({
+    example: '+91',
+  })
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

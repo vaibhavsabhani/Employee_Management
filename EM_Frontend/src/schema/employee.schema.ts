@@ -6,6 +6,7 @@ export const employeeSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   profilePicture: z.string().optional(),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
+  countryCode: z.string().min(1, "required"),
   phoneNumber: z.string().min(10, "Phone number is required"),
   panNumber: z
     .string()

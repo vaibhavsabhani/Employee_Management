@@ -30,12 +30,6 @@ import { DataTable } from "@/src/components/custom/DataTable";
 import { PageHeader } from "@/src/components/custom/PageHeader";
 import Filter from "@/src/components/custom/filters";
 import { Button } from "@/src/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
-} from "@/src/components/ui/dialog";
 import { useRole } from "@/src/hooks/useRole";
 import { ROLES } from "@/src/constant/role";
 import EmployeeFilter, { DraftFilters } from "./EmployeeFilter";
@@ -51,6 +45,7 @@ export type Employee = {
   middleName?: string;
   lastName: string;
   email: string;
+  countryCode?: string;
   phoneNumber?: string;
   panNumber?: string;
   aadhaarNumber?: string;

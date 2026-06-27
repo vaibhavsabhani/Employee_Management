@@ -6,6 +6,7 @@ import { PageHeader } from "@/src/components/custom/PageHeader";
 import { Toast } from "@/src/components/custom/Toast";
 import { InputField } from "@/src/components/form/InputField";
 import { SelectField } from "@/src/components/form/SelectField";
+import { COUNTRY_CODES } from "@/src/constant/countryCodes";
 import { SwitchField } from "@/src/components/form/SwitchField";
 import { TextareaField } from "@/src/components/form/TextareaField";
 import { Button } from "@/src/components/ui/button";
@@ -60,6 +61,7 @@ const page = () => {
       lastName: "",
       profilePicture: "",
       email: "",
+      countryCode: "",
       phoneNumber: "",
       panNumber: "",
       aadhaarNumber: "",
@@ -91,6 +93,7 @@ const page = () => {
       lastName: user.lastName ?? "",
       profilePicture: user.profilePicture ?? "",
       email: user.email ?? "",
+      countryCode: user.countryCode ?? "",
       phoneNumber: user.phoneNumber ?? "",
       panNumber: user.panNumber ?? "",
       aadhaarNumber: user.aadhaarNumber ?? "",
@@ -262,13 +265,26 @@ const page = () => {
                     placeholder="j.doe@company.com"
                     required
                   />
-                  <InputField
-                    control={form.control}
-                    name="phoneNumber"
-                    label="Phone Number"
-                    placeholder="+1 (555) 000-0000"
-                    required
-                  />
+                  <div className="flex gap-3">
+                    <SelectField
+                      control={form.control}
+                      name="countryCode"
+                      label="Code"
+                      placeholder="Select a country code"
+                      options={COUNTRY_CODES}
+                      className="max-w-20"
+                      required
+                    />
+                    <div className="flex-1">
+                      <InputField
+                        control={form.control}
+                        name="phoneNumber"
+                        label="Phone Number"
+                        placeholder="9876543210"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

@@ -28,6 +28,7 @@ model User {
   lastName       String   @map("last_name")
   email          String   @unique @map("email")
   password       String   @map("password")
+  countryCode    String?  @map("country_code")
   phoneNumber    String?  @unique @map("phone_number")
   profilePicture String?  @map("profile_picture")
   address        String?  @map("address")
@@ -246,13 +247,13 @@ model Notification {
 }
 
 model EmailLog {
-  id        String   @id @default(uuid()) @map("id")
-  userId    String   @map("user_id")
-  user      User     @relation("UserEmailLogs", fields: [userId], references: [id], onDelete: Cascade)
-  to        String   @map("to")
-  subject   String   @map("subject")
-  body      String   @map("body") @db.Text
-  sentAt    DateTime @default(now()) @map("sent_at")
+  id      String   @id @default(uuid()) @map("id")
+  userId  String   @map("user_id")
+  user    User     @relation("UserEmailLogs", fields: [userId], references: [id], onDelete: Cascade)
+  to      String   @map("to")
+  subject String   @map("subject")
+  body    String   @map("body") @db.Text
+  sentAt  DateTime @default(now()) @map("sent_at")
 
   @@index([userId])
   @@map("email_logs")
