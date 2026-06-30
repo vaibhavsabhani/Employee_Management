@@ -233,4 +233,49 @@ export class AuthService {
       message: 'Password reset successfully',
     };
   }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'New password must be different from the current password',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    // Notify the user and record it in their email log.
+    try {
+      await this.mailService.sendPasswordChangedEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+        newPassword,
+        user.id,
+      );
+    } catch (mailError) {
+      console.error('Failed to send password changed email:', mailError);
+    }
+
+    return {
+      success: true,
+      message: 'Password changed successfully',
+    };
+  }
 }
