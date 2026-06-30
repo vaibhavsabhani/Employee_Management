@@ -13,6 +13,8 @@ import {
   LEAVE_TYPE_MAP,
 } from "@/src/constant/constant";
 import usePaginatedQuery from "@/src/hooks/usePagination";
+import { ROLES } from "@/src/constant/role";
+import { getCookie } from "@/src/lib/cookieStorage";
 import {
   useLazyGetAttendanceQuery,
   useMarkAttendanceMutation,
@@ -146,6 +148,11 @@ const AttendancePage = () => {
   });
   const [draft, setDraft] = useState<DraftFilters>({ employeeName: "", employeeEmail: "" });
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsSuperAdmin(getCookie("role") === ROLES.SUPER_ADMIN);
+  }, []);
 
   const [getAttendance] = useLazyGetAttendanceQuery();
   const [markAttendance] = useMarkAttendanceMutation();
@@ -270,6 +277,17 @@ const AttendancePage = () => {
 
         if (status === "on-leave") {
           return <span className="text-xs text-slate-400 dark:text-slate-500 italic">Auto-marked (On Leave)</span>;
+        }
+
+        // Once marked (incl. auto-marked on clock-in), only a super admin
+        // may change it.
+        const alreadyMarked = status === "present" || status === "absent";
+        if (alreadyMarked && !isSuperAdmin) {
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+              Marked
+            </span>
+          );
         }
 
         return (

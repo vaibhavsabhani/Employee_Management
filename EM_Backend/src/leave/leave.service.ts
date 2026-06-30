@@ -23,7 +23,16 @@ export class LeaveService {
   }
 
   async create(employeeId: string, dto: CreateLeaveDto) {
-    const { leaveTypeId, startDate, endDate, reason } = dto;
+    const { leaveTypeId, startDate, reason } = dto;
+    const isHalfDay = dto.isHalfDay ?? false;
+    const endDate = isHalfDay ? startDate : dto.endDate;
+    const halfDaySession = isHalfDay ? dto.halfDaySession : null;
+
+    if (isHalfDay && !halfDaySession) {
+      throw new BadRequestException(
+        'Please select which half of the day (first or second)',
+      );
+    }
 
     if (new Date(endDate) < new Date(startDate)) {
       throw new BadRequestException('End date cannot be before start date');
@@ -53,7 +62,7 @@ export class LeaveService {
       );
     }
 
-    const totalDays = this.calcTotalDays(startDate, endDate);
+    const totalDays = isHalfDay ? 0.5 : this.calcTotalDays(startDate, endDate);
 
     const leave = await this.prisma.leave.create({
       data: {
@@ -62,6 +71,8 @@ export class LeaveService {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         totalDays,
+        isHalfDay,
+        halfDaySession,
         reason,
         statusId: 1,
       },
@@ -73,9 +84,12 @@ export class LeaveService {
       select: { firstName: true, lastName: true },
     });
     const days = leave.totalDays;
+    const durationLabel = isHalfDay
+      ? `Half day · ${halfDaySession === 'first_half' ? 'First Half' : 'Second Half'}`
+      : `${days} day${days > 1 ? 's' : ''}`;
     await this.notificationService.notifyAllAdmins(
       'New Leave Request',
-      `${employee?.firstName} ${employee?.lastName} applied for ${leave.leaveType.name} leave (${days} day${days > 1 ? 's' : ''})`,
+      `${employee?.firstName} ${employee?.lastName} applied for ${leave.leaveType.name} leave (${durationLabel})`,
       'leave_applied',
       { leaveId: leave.id },
     );

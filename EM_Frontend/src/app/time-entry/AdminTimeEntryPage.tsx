@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/src/components/custom/ConfirmDialog";
 import { Textarea } from "@/src/components/ui/textarea";
 import Filter from "@/src/components/custom/filters";
 import DateInput from "@/src/components/custom/DateInput";
+import { NotesCell } from "@/src/components/custom/NotesCell";
 import { STATUS_MAP, TIME_ENTRY_STATUS } from "@/src/constant/constant";
 import usePaginatedQuery from "@/src/hooks/usePagination";
 import {
@@ -156,9 +157,13 @@ const AdminTimeEntryPage = () => {
     transformResponse,
   });
 
-  // auto-refresh when employee submits or resubmits a time entry
+  // auto-refresh when an employee submits/resubmits or clocks out (auto-approved)
   useTimeEntrySocket((type) => {
-    if (type === "time_entry_submitted" || type === "time_entry_resubmitted") {
+    if (
+      type === "time_entry_submitted" ||
+      type === "time_entry_resubmitted" ||
+      type === "time_entry_clock_out"
+    ) {
       refetch();
     }
   });
@@ -259,12 +264,22 @@ const AdminTimeEntryPage = () => {
     {
       accessorKey: "notes",
       header: "Notes",
-      size: 320,
-      cell: ({ row }) => (
-        <span className="wrap-break-word whitespace-normal block text-slate-500 dark:text-slate-400 text-sm">
-          {row.original.notes || "—"}
-        </span>
-      ),
+      size: 280,
+      cell: ({ row }) => {
+        const e = row.original.employee;
+        const name = e ? `${e.firstName} ${e.lastName}` : undefined;
+        const date = new Date(row.original.date).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        return (
+          <NotesCell
+            notes={row.original.notes}
+            subtitle={[name, date].filter(Boolean).join(" · ")}
+          />
+        );
+      },
     },
     {
       accessorKey: "status",
@@ -293,37 +308,51 @@ const AdminTimeEntryPage = () => {
         const id: string = row.original.id;
         const rowState = rowLoading[id];
 
-        if (sid !== 1) return <span className="text-xs text-slate-400 dark:text-slate-500">—</span>;
+        // Rejected entries are awaiting the employee's resubmission.
+        if (sid === 3)
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+          );
+
+        const approveBtn = (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!!rowState}
+            className="h-7 px-2.5 text-xs border-btn-approve-ring text-btn-approve-fg hover:bg-btn-approve-hover shrink-0"
+            onClick={() => handleApprove(id)}
+          >
+            {rowState === "approve" ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <CheckCircle2 className="size-3.5 mr-1" />
+            )}
+            {rowState === "approve" ? "Approving…" : "Approve"}
+          </Button>
+        );
+
+        const rejectBtn = (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!!rowState}
+            className="h-7 px-2.5 text-xs border-btn-reject-ring text-btn-reject-fg hover:bg-btn-reject-hover shrink-0"
+            onClick={() => openRejectDialog(id)}
+          >
+            {rowState === "reject" ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <XCircle className="size-3.5 mr-1" />
+            )}
+            {rowState === "reject" ? "Rejecting…" : "Reject"}
+          </Button>
+        );
+
         return (
           <div className="flex items-center gap-2 flex-nowrap">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!!rowState}
-              className="h-7 px-2.5 text-xs border-btn-approve-ring text-btn-approve-fg hover:bg-btn-approve-hover shrink-0"
-              onClick={() => handleApprove(id)}
-            >
-              {rowState === "approve" ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="size-3.5 mr-1" />
-              )}
-              {rowState === "approve" ? "Approving…" : "Approve"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!!rowState}
-              className="h-7 px-2.5 text-xs border-btn-reject-ring text-btn-reject-fg hover:bg-btn-reject-hover shrink-0"
-              onClick={() => openRejectDialog(id)}
-            >
-              {rowState === "reject" ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <XCircle className="size-3.5 mr-1" />
-              )}
-              {rowState === "reject" ? "Rejecting…" : "Reject"}
-            </Button>
+            {/* Pending → can approve or reject; Approved → can still reject */}
+            {sid === 1 && approveBtn}
+            {rejectBtn}
           </div>
         );
       },

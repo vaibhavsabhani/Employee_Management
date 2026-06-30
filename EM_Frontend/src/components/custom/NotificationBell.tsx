@@ -67,9 +67,16 @@ export function NotificationBell() {
       }
       // broadcast time-entry events
       if (
-        ["time_entry_submitted", "time_entry_resubmitted", "time_entry_approved", "time_entry_rejected"].includes(
-          n.type,
-        )
+        [
+          "time_entry_submitted",
+          "time_entry_resubmitted",
+          "time_entry_approved",
+          "time_entry_rejected",
+          "time_entry_clock_in",
+          "time_entry_lunch_start",
+          "time_entry_lunch_end",
+          "time_entry_clock_out",
+        ].includes(n.type)
       ) {
         window.dispatchEvent(new CustomEvent("timeentry:update", { detail: { type: n.type } }));
       }

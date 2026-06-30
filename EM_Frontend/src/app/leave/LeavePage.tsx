@@ -7,11 +7,13 @@ import { Card, CardContent } from "@/src/components/ui/card";
 import Filter from "@/src/components/custom/filters";
 import DateInput from "@/src/components/custom/DateInput";
 import {
+  HALF_DAY_SESSION_LABEL,
   LEAVE_STATUS,
   LEAVE_STATUS_MAP,
   LEAVE_TYPE_MAP,
   LEAVE_TYPE_OPTIONS,
 } from "@/src/constant/constant";
+import { NotesCell } from "@/src/components/custom/NotesCell";
 import usePaginatedQuery from "@/src/hooks/usePagination";
 import { useLazyMeLeavesQuery } from "@/src/store/action/leave/leave";
 import { ColumnDef } from "@tanstack/react-table";
@@ -158,16 +160,33 @@ const LeavePage = () => {
     {
       accessorKey: "totalDays",
       header: "Days",
-      cell: ({ row }) => `${row.original.totalDays} day${row.original.totalDays !== 1 ? "s" : ""}`,
+      cell: ({ row }) => {
+        const l = row.original;
+        if (l.isHalfDay) {
+          const session = HALF_DAY_SESSION_LABEL[l.halfDaySession] ?? "";
+          return `Half day${session ? ` · ${session}` : ""}`;
+        }
+        return `${l.totalDays} day${l.totalDays !== 1 ? "s" : ""}`;
+      },
     },
     {
       accessorKey: "reason",
       header: "Reason",
-      cell: ({ row }) => (
-        <span className="max-w-48 truncate block text-slate-500 dark:text-slate-400 text-sm">
-          {row.original.reason || "—"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const l = row.original;
+        const date = new Date(l.startDate).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        return (
+          <NotesCell
+            notes={l.reason}
+            title="Leave Reason"
+            subtitle={[l.leaveType?.name, date].filter(Boolean).join(" · ")}
+          />
+        );
+      },
     },
     {
       accessorKey: "status",

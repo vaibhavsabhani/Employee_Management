@@ -15,7 +15,11 @@ import { CalendarDays, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { LEAVE_TYPE_OPTIONS } from "@/src/constant/constant";
+import {
+  HALF_DAY_SESSION_OPTIONS,
+  LEAVE_DAY_TYPE_OPTIONS,
+  LEAVE_TYPE_OPTIONS,
+} from "@/src/constant/constant";
 
 const LEAVE_TYPE_FORM_OPTIONS = LEAVE_TYPE_OPTIONS.filter((o) => o.value !== "");
 
@@ -25,28 +29,43 @@ const AddLeavePage = () => {
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveSchema),
-    defaultValues: { leaveTypeId: "", startDate: "", endDate: "", reason: "" },
+    defaultValues: {
+      leaveTypeId: "",
+      dayType: "full",
+      startDate: "",
+      endDate: "",
+      halfDaySession: undefined,
+      reason: "",
+    },
   });
 
   const { control, handleSubmit } = form;
 
+  const dayType = useWatch({ control, name: "dayType" });
   const startDate = useWatch({ control, name: "startDate" });
   const endDate = useWatch({ control, name: "endDate" });
 
+  const isHalf = dayType === "half";
+
   const totalDays = useMemo(() => {
+    if (isHalf) return startDate ? 0.5 : null;
     if (!startDate || !endDate) return null;
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (end < start) return null;
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-  }, [startDate, endDate]);
+  }, [isHalf, startDate, endDate]);
 
   const onSubmit = async (values: LeaveFormValues) => {
     try {
+      const half = values.dayType === "half";
       const res = await addLeave({
         leaveTypeId: Number(values.leaveTypeId),
         startDate: values.startDate,
-        endDate: values.endDate,
+        // half-day applies to a single date
+        endDate: half ? values.startDate : values.endDate,
+        isHalfDay: half,
+        halfDaySession: half ? values.halfDaySession : undefined,
         reason: values.reason,
       }).unwrap();
       Toast(res);
@@ -76,37 +95,71 @@ const AddLeavePage = () => {
             </CardHeader>
 
             <CardContent className="p-6 space-y-6">
-              <SelectField
-                control={control}
-                name="leaveTypeId"
-                label="Leave Type"
-                required
-                placeholder="Select leave type"
-                options={LEAVE_TYPE_FORM_OPTIONS}
-              />
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <DateInput
+                <SelectField
                   control={control}
-                  name="startDate"
-                  label="Start Date"
-                  isRequired
-                  minDate={new Date()}
+                  name="leaveTypeId"
+                  label="Leave Type"
+                  required
+                  placeholder="Select leave type"
+                  options={LEAVE_TYPE_FORM_OPTIONS}
                 />
-                <DateInput
+
+                <SelectField
                   control={control}
-                  name="endDate"
-                  label="End Date"
-                  isRequired
-                  minDate={startDate ? new Date(startDate) : new Date()}
+                  name="dayType"
+                  label="Duration"
+                  required
+                  placeholder="Select duration"
+                  options={LEAVE_DAY_TYPE_OPTIONS}
                 />
               </div>
+
+              {isHalf ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <DateInput
+                    control={control}
+                    name="startDate"
+                    label="Date"
+                    isRequired
+                    minDate={new Date()}
+                  />
+                  <SelectField
+                    control={control}
+                    name="halfDaySession"
+                    label="Which Half"
+                    required
+                    placeholder="Select first or second half"
+                    options={HALF_DAY_SESSION_OPTIONS}
+                  />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <DateInput
+                    control={control}
+                    name="startDate"
+                    label="Start Date"
+                    isRequired
+                    minDate={new Date()}
+                  />
+                  <DateInput
+                    control={control}
+                    name="endDate"
+                    label="End Date"
+                    isRequired
+                    minDate={startDate ? new Date(startDate) : new Date()}
+                  />
+                </div>
+              )}
 
               {totalDays !== null && (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800">
                   <CalendarDays className="size-4 text-violet-600 dark:text-violet-400 shrink-0" />
                   <p className="text-sm text-violet-700 dark:text-violet-300 font-medium">
-                    Total: <span className="font-bold">{totalDays} day{totalDays !== 1 ? "s" : ""}</span>
+                    Total:{" "}
+                    <span className="font-bold">
+                      {totalDays} day{totalDays !== 1 ? "s" : ""}
+                    </span>
                   </p>
                 </div>
               )}

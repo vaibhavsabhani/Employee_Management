@@ -34,8 +34,6 @@ import { useRole } from "@/src/hooks/useRole";
 import { ROLES } from "@/src/constant/role";
 import EmployeeFilter, { DraftFilters } from "./EmployeeFilter";
 import { FilterTabs } from "@/src/components/custom/FilterTabs";
-import { ViewDetailsDialog } from "@/src/components/custom/ViewDetailsDialog";
-import { employeeDialogConfig } from "./employeeConfig";
 import { initials } from "@/src/lib/utils";
 
 /* ── types ─────────────────────────────────────────────── */
@@ -107,7 +105,6 @@ const EmployeePage = () => {
   const [editEmployee, { isLoading: isReactivating }] =
     useEditEmployeeMutation();
 
-  const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<Employee | null>(
     null,
@@ -251,7 +248,7 @@ const EmployeePage = () => {
               size="sm"
               variant="outline"
               className="h-7 px-2.5 text-xs gap-1 shrink-0"
-              onClick={() => setViewEmployee(emp)}
+              onClick={() => router.push(`/employees/${emp.id}/view`)}
             >
               <Eye className="size-3" />
               View
@@ -341,23 +338,6 @@ const EmployeePage = () => {
         limit={limit}
         setLimit={setLimit}
         showExtraHeader={["employee-status-tabs", "pageHeading", "FilterTabs"]}
-      />
-
-      <ViewDetailsDialog
-        open={!!viewEmployee}
-        onClose={() => setViewEmployee(null)}
-        config={
-          employeeDialogConfig(viewEmployee) ?? {
-            initials: "",
-            title: "",
-            fields: [],
-          }
-        }
-        editLabel="Edit Employee"
-        onEdit={() => {
-          router.push(`/employees/${viewEmployee?.id}`);
-          setViewEmployee(null);
-        }}
       />
 
       {/* ── Delete Confirm Dialog ────────────────────────── */}

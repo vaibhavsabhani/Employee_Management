@@ -152,10 +152,25 @@ export class AttendanceService {
     };
   }
 
-  async markAttendance(adminId: string, dto: MarkAttendanceDto) {
+  async markAttendance(
+    adminId: string,
+    roleName: string | undefined,
+    dto: MarkAttendanceDto,
+  ) {
     const { employeeId, date, statusId, notes } = dto;
     const targetDate = new Date(`${date}T00:00:00.000Z`);
     const endOfDay = new Date(`${date}T23:59:59.999Z`);
+
+    // Once attendance is marked (incl. auto-marked via clock-in), only a
+    // super admin can change it.
+    const existing = await this.prisma.attendance.findUnique({
+      where: { employeeId_date: { employeeId, date: targetDate } },
+    });
+    if (existing && existing.isActive && roleName !== 'super_admin') {
+      throw new BadRequestException(
+        'Attendance is already marked. Only a super admin can change it.',
+      );
+    }
 
     // Block marking if employee has approved leave on this date
     const leave = await this.prisma.leave.findFirst({
