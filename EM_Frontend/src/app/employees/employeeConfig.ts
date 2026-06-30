@@ -58,14 +58,13 @@ export const employeeDialogConfig = (viewEmployee: Employee | null) =>
           {
             icon: CalendarDays,
             label: "Joined",
-            value: new Date(viewEmployee.createdAt).toLocaleDateString(
-              "en-IN",
-              {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              },
-            ),
+            value: viewEmployee.createdAt
+              ? new Date(viewEmployee.createdAt).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+              : undefined,
           },
         ],
       }

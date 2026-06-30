@@ -413,6 +413,10 @@ export class TimeEntryService {
       notes,
     } = dto;
 
+    if (!endTime) {
+      throw new BadRequestException('End time is required');
+    }
+
     const startMinutes = this.parseTimeToMinutes(startTime);
     let endMinutes = this.parseTimeToMinutes(endTime);
     if (endMinutes < startMinutes) endMinutes += 24 * 60;

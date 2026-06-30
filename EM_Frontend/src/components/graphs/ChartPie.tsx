@@ -38,15 +38,22 @@ function EmptyState({ message }: { message: string }) {
 }
 
 type PieLabelProps = {
-  cx: number;
-  cy: number;
-  midAngle: number;
-  innerRadius: number;
-  outerRadius: number;
-  percent: number;
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
 };
 
-function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelProps) {
+function renderPieLabel({
+  cx = 0,
+  cy = 0,
+  midAngle = 0,
+  innerRadius = 0,
+  outerRadius = 0,
+  percent = 0,
+}: PieLabelProps) {
   if (percent < 0.05) return null;
   const r = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + r * Math.cos((-midAngle * Math.PI) / 180);

@@ -5,7 +5,7 @@ export function DetailRow({
 }: {
   icon: React.ElementType;
   label: string;
-  value?: string | null;
+  value?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-border/60 last:border-0">
