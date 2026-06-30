@@ -77,6 +77,21 @@ export const LEAVE_TYPE_OPTIONS = [
   { label: "Unpaid Leave", value: "4" },
 ];
 
+export const LEAVE_DAY_TYPE_OPTIONS = [
+  { label: "Full Day", value: "full" },
+  { label: "Half Day", value: "half" },
+];
+
+export const HALF_DAY_SESSION_OPTIONS = [
+  { label: "First Half (Morning)", value: "first_half" },
+  { label: "Second Half (Afternoon)", value: "second_half" },
+];
+
+export const HALF_DAY_SESSION_LABEL: Record<string, string> = {
+  first_half: "First Half",
+  second_half: "Second Half",
+};
+
 export const LEAVE_TYPE_MAP: Record<
   number,
   { label: string; className: string }
