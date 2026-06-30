@@ -11,6 +11,7 @@ import { CreateTimeEntryDto } from './dto/create-time-entry.dto';
 import { GetTimeEntryDto } from './dto/get-time-entry.dto';
 import { UpdateTimeEntryDto } from './dto/update-time-entry.dto';
 import { UpdateTimeEntryStatusDto } from './dto/update-time-entry-status.dto';
+import { PunchDto, PunchAction } from './dto/punch.dto';
 
 @Injectable()
 export class TimeEntryService {
@@ -27,6 +28,314 @@ export class TimeEntryService {
       .map(Number);
 
     return hours * 60 + minutes;
+  }
+
+  /** Current wall-clock time as a "HH:mm" string (server local time). */
+  private nowHHmm(now: Date): string {
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
+  /** Start of today (server local time) used as the entry `date`. */
+  private todayStart(): Date {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  /** Today's date as "YYYY-MM-DD" (server local time). */
+  private todayDateStr(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  /** The employee's approved leave covering today, if any. */
+  private async todayApprovedLeave(employeeId: string) {
+    const dateStr = this.todayDateStr();
+    return this.prisma.leave.findFirst({
+      where: {
+        employeeId,
+        statusId: 2, // approved
+        isActive: true,
+        startDate: { lte: new Date(`${dateStr}T23:59:59.999Z`) },
+        endDate: { gte: new Date(`${dateStr}T00:00:00.000Z`) },
+      },
+      include: { leaveType: true },
+    });
+  }
+
+  /** Find today's punch entry for an employee, if any. */
+  private async findTodayEntry(employeeId: string) {
+    const start = this.todayStart();
+    const end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+
+    return this.prisma.timeEntry.findFirst({
+      where: {
+        employeeId,
+        isActive: true,
+        date: { gte: start, lte: end },
+      },
+      include: { status: true },
+    });
+  }
+
+  /** Whole minutes between two timestamps (never negative). */
+  private minutesBetween(from: Date, to: Date): number {
+    return Math.max(0, Math.round((to.getTime() - from.getTime()) / 60000));
+  }
+
+  /** Display name from an entry that includes the employee relation. */
+  private employeeName(entry: any): string {
+    const e = entry?.employee;
+    return e ? `${e.firstName} ${e.lastName}` : 'An employee';
+  }
+
+  /** Notify all admins of a punch event (fire-and-forget). */
+  private notifyPunch(
+    entry: any,
+    title: string,
+    message: string,
+    type: string,
+  ) {
+    this.notificationService.notifyAllAdmins(title, message, type, {
+      timeEntryId: entry.id,
+      employeeId: entry.employeeId,
+    });
+  }
+
+  /** Today's punch entry plus a derived state for the UI. */
+  async getActive(employeeId: string) {
+    const entry = await this.findTodayEntry(employeeId);
+
+    let state:
+      | 'not_clocked_in'
+      | 'working'
+      | 'on_lunch'
+      | 'completed' = 'not_clocked_in';
+
+    if (entry) {
+      if (entry.endTime) state = 'completed';
+      else if (entry.lunchOutAt && !entry.lunchInAt) state = 'on_lunch';
+      else state = 'working';
+    }
+
+    const leave = await this.todayApprovedLeave(employeeId);
+
+    return { success: true, state, data: entry, leave };
+  }
+
+  /** Single entry point for all punch-clock actions. */
+  async punch(employeeId: string, dto: PunchDto) {
+    switch (dto.action) {
+      case PunchAction.CLOCK_IN:
+        return this.clockIn(employeeId);
+      case PunchAction.LUNCH_START:
+        return this.lunchStart(employeeId);
+      case PunchAction.LUNCH_END:
+        return this.lunchEnd(employeeId);
+      case PunchAction.CLOCK_OUT:
+        if (!dto.notes || !dto.notes.trim()) {
+          throw new BadRequestException(
+            'Work notes are required to clock out',
+          );
+        }
+        return this.clockOut(employeeId, dto.notes.trim());
+      default:
+        throw new BadRequestException('Invalid punch action');
+    }
+  }
+
+  /** Clock in — creates today's entry. One per day. */
+  private async clockIn(employeeId: string) {
+    const existing = await this.findTodayEntry(employeeId);
+    if (existing) {
+      throw new BadRequestException(
+        'You have already clocked in today',
+      );
+    }
+
+    const dateStr = this.todayDateStr();
+    const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
+
+    // Block clock-in when on approved leave today — unless it's a half day.
+    const leave = await this.todayApprovedLeave(employeeId);
+    if (leave && !leave.isHalfDay) {
+      throw new BadRequestException(
+        'You are on approved leave today and cannot clock in.',
+      );
+    }
+
+    const now = new Date();
+    const entry = await this.prisma.timeEntry.create({
+      data: {
+        employeeId,
+        date: this.todayStart(),
+        startTime: this.nowHHmm(now),
+        endTime: null,
+        breakDuration: 0,
+        duration: 0,
+        statusId: 1,
+      },
+      include: {
+        status: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    // Automatically mark the employee Present for today.
+    await this.prisma.attendance.upsert({
+      where: {
+        employeeId_date: { employeeId, date: dayStart },
+      },
+      create: {
+        employeeId,
+        date: dayStart,
+        statusId: 1, // Present
+        notes: 'Auto-marked via clock-in',
+      },
+      update: { statusId: 1 },
+    });
+
+    this.notifyPunch(
+      entry,
+      'Employee Clocked In',
+      `${this.employeeName(entry)} clocked in at ${entry.startTime}.`,
+      'time_entry_clock_in',
+    );
+
+    return { success: true, message: 'Clocked in', data: entry };
+  }
+
+  /** Leaving for lunch — marks the start of the (single) lunch break. */
+  private async lunchStart(employeeId: string) {
+    const entry = await this.findTodayEntry(employeeId);
+    if (!entry) {
+      throw new BadRequestException('You need to clock in first');
+    }
+    if (entry.endTime) {
+      throw new BadRequestException('You have already clocked out today');
+    }
+    if (entry.lunchOutAt) {
+      throw new BadRequestException('Lunch break has already been taken');
+    }
+
+    const lunchOut = new Date();
+    const updated = await this.prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { lunchOutAt: lunchOut },
+      include: {
+        status: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    this.notifyPunch(
+      updated,
+      'Employee On Lunch Break',
+      `${this.employeeName(updated)} left for lunch at ${this.nowHHmm(lunchOut)}.`,
+      'time_entry_lunch_start',
+    );
+
+    return { success: true, message: 'Lunch started', data: updated };
+  }
+
+  /** Back from lunch — ends the lunch break and stores its duration. */
+  private async lunchEnd(employeeId: string) {
+    const entry = await this.findTodayEntry(employeeId);
+    if (!entry) {
+      throw new BadRequestException('You need to clock in first');
+    }
+    if (entry.endTime) {
+      throw new BadRequestException('You have already clocked out today');
+    }
+    if (!entry.lunchOutAt) {
+      throw new BadRequestException('You are not on a lunch break');
+    }
+    if (entry.lunchInAt) {
+      throw new BadRequestException('You are already back from lunch');
+    }
+
+    const lunchIn = new Date();
+    const breakDuration = this.minutesBetween(entry.lunchOutAt, lunchIn);
+
+    const updated = await this.prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: { lunchInAt: lunchIn, breakDuration },
+      include: {
+        status: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    this.notifyPunch(
+      updated,
+      'Employee Back from Lunch',
+      `${this.employeeName(updated)} returned from lunch at ${this.nowHHmm(
+        lunchIn,
+      )} (${breakDuration} min break).`,
+      'time_entry_lunch_end',
+    );
+
+    return { success: true, message: 'Back from lunch', data: updated };
+  }
+
+  /** Clock out — finalises the entry and auto-approves it. */
+  private async clockOut(employeeId: string, notes: string) {
+    const entry = await this.findTodayEntry(employeeId);
+    if (!entry) {
+      throw new BadRequestException('You need to clock in first');
+    }
+    if (entry.endTime) {
+      throw new BadRequestException('You have already clocked out today');
+    }
+
+    const now = new Date();
+
+    // If they clock out while still on lunch, close the lunch break first.
+    let breakDuration = entry.breakDuration;
+    let lunchInAt = entry.lunchInAt;
+    if (entry.lunchOutAt && !entry.lunchInAt) {
+      lunchInAt = now;
+      breakDuration = this.minutesBetween(entry.lunchOutAt, now);
+    }
+
+    const startMinutes = this.parseTimeToMinutes(entry.startTime);
+    let endMinutes = this.parseTimeToMinutes(this.nowHHmm(now));
+    if (endMinutes < startMinutes) endMinutes += 24 * 60;
+
+    const duration = Math.max(0, endMinutes - startMinutes - breakDuration);
+
+    const updated = await this.prisma.timeEntry.update({
+      where: { id: entry.id },
+      data: {
+        endTime: this.nowHHmm(now),
+        lunchInAt,
+        breakDuration,
+        duration,
+        notes,
+        statusId: 2, // auto-approved
+      },
+      include: {
+        status: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    const hours = (duration / 60).toFixed(1);
+    this.notifyPunch(
+      updated,
+      'Employee Clocked Out',
+      `${this.employeeName(updated)} clocked out at ${updated.endTime}. Worked ${hours}h.`,
+      'time_entry_clock_out',
+    );
+
+    return {
+      success: true,
+      message: 'Clocked out. Have a great day!',
+      data: updated,
+    };
   }
 
   async create(
@@ -274,6 +583,9 @@ export class TimeEntryService {
 
     const where: any = {
       isActive: true,
+      // Hide in-progress entries (clocked in but not yet clocked out) from
+      // admin review — only finalised entries should be approvable.
+      endTime: { not: null },
     };
 
     if (employeeId) {
@@ -408,7 +720,7 @@ export class TimeEntryService {
     const {
       date,
       startTime = entry.startTime,
-      endTime = entry.endTime,
+      endTime = entry.endTime ?? '',
       breakDuration = entry.breakDuration,
       notes,
     } = dto;

@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
+
+export const HALF_DAY_SESSIONS = ['first_half', 'second_half'] as const;
+export type HalfDaySession = (typeof HALF_DAY_SESSIONS)[number];
 
 export class CreateLeaveDto {
   @ApiProperty()
@@ -14,6 +25,18 @@ export class CreateLeaveDto {
   @ApiProperty({ example: '2024-01-12' })
   @IsDateString()
   endDate!: string;
+
+  @ApiPropertyOptional({ default: false })
+  @IsBoolean()
+  @IsOptional()
+  isHalfDay?: boolean;
+
+  @ApiPropertyOptional({ enum: HALF_DAY_SESSIONS })
+  @IsIn(HALF_DAY_SESSIONS, {
+    message: 'Half day session must be first_half or second_half',
+  })
+  @IsOptional()
+  halfDaySession?: HalfDaySession;
 
   @ApiPropertyOptional()
   @IsString()

@@ -24,6 +24,7 @@ import { CreateTimeEntryDto } from './dto/create-time-entry.dto';
 import { GetTimeEntryDto } from './dto/get-time-entry.dto';
 import { UpdateTimeEntryDto } from './dto/update-time-entry.dto';
 import { UpdateTimeEntryStatusDto } from './dto/update-time-entry-status.dto';
+import { PunchDto } from './dto/punch.dto';
 
 import { UserGuard } from '../auth/guards/user.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -64,6 +65,22 @@ export class TimeEntryController {
       req.user.id,
       query,
     );
+  }
+
+  @ApiOperation({ summary: "Today's punch entry & state" })
+  @Get('active')
+  @Roles('employee')
+  getActive(@Request() req) {
+    return this.timeEntryService.getActive(req.user.id);
+  }
+
+  @ApiOperation({
+    summary: 'Punch (clock-in / lunch-start / lunch-end / clock-out)',
+  })
+  @Post('punch')
+  @Roles('employee')
+  punch(@Request() req, @Body() dto: PunchDto) {
+    return this.timeEntryService.punch(req.user.id, dto);
   }
 
   @ApiOperation({

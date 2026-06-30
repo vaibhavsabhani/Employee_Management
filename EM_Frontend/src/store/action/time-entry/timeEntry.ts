@@ -24,6 +24,24 @@ export const timeEntryApi = createApi({
       }),
     }),
 
+    activeTimeEntry: builder.query({
+      query: () => ({
+        url: "/time-entries/active",
+        method: "GET",
+      }),
+    }),
+
+    punch: builder.mutation({
+      query: (body: {
+        action: "clock-in" | "lunch-start" | "lunch-end" | "clock-out";
+        notes?: string;
+      }) => ({
+        url: "/time-entries/punch",
+        method: "POST",
+        body,
+      }),
+    }),
+
     meTimeEntries: builder.query({
       query: (params) => ({
         url: "/time-entries/me",
@@ -92,4 +110,6 @@ export const {
   useLazyGetTimeEntryQuery,
   useResubmitTimeEntryMutation,
   useUpdateTimeEntryStatusMutation,
+  useActiveTimeEntryQuery,
+  usePunchMutation,
 } = timeEntryApi;

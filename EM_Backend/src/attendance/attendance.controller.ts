@@ -32,6 +32,10 @@ export class AttendanceController {
   @Post('mark')
   @Roles('admin')
   markAttendance(@Request() req, @Body() dto: MarkAttendanceDto) {
-    return this.attendanceService.markAttendance(req.user.id, dto);
+    return this.attendanceService.markAttendance(
+      req.user.id,
+      req.user.role?.name,
+      dto,
+    );
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import {
@@ -21,7 +22,6 @@ import {
   ClipboardList,
   Settings,
   LogOut,
-  Building2,
   ActivitySquare,
 } from "lucide-react";
 
@@ -107,28 +107,25 @@ export function AppSidebar({ pathname, userRole }: Props) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border pb-3">
-        <div className="flex items-center gap-3 px-3 pt-3 pb-1">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-            style={{
-              background: "var(--sidebar-primary)",
-              boxShadow: "0 0 18px rgba(79,128,255,0.45)",
-            }}
-          >
-            <Building2 className="h-5 w-5 text-white" />
-          </div>
+        <div className="flex items-center px-3 pt-3 pb-1">
+          {/* Expanded: full Aksharam wordmark */}
+          <Image
+            src="/aksharam-logo-white.png"
+            alt="Aksharam Fintech"
+            width={2104}
+            height={372}
+            priority
+            className="h-10 w-auto max-w-full object-contain group-data-[collapsible=icon]:hidden"
+          />
 
-          <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-bold tracking-tight text-white">
-              Enterprise HR
-            </span>
-            <span
-              className="truncate text-[11px] font-medium"
-              style={{ color: "var(--sidebar-foreground)" }}
-            >
-              Admin Portal
-            </span>
-          </div>
+          {/* Collapsed: square mark only */}
+          <Image
+            src="/aksharam-mark.png"
+            alt="Aksharam"
+            width={342}
+            height={342}
+            className="hidden size-8 object-contain group-data-[collapsible=icon]:block"
+          />
         </div>
       </SidebarHeader>
 

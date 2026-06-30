@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { Moon, Sun, Monitor, Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ChangePasswordCard } from "./ChangePasswordCard";
 
 const themes = [
   {
@@ -150,6 +151,8 @@ export default function SettingsPage() {
           })}
         </div>
       </div>
+
+      <ChangePasswordCard />
     </div>
   );
 }

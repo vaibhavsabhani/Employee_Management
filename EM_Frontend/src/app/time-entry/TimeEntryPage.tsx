@@ -10,7 +10,7 @@ import { STATUS_MAP, TIME_ENTRY_STATUS } from "@/src/constant/constant";
 import usePaginatedQuery from "@/src/hooks/usePagination";
 import { useLazyMeTimeEntriesQuery } from "@/src/store/action/time-entry/timeEntry";
 import { ColumnDef } from "@tanstack/react-table";
-import { AlertCircle, CheckCircle2, Clock, Pencil, Plus } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useTimeEntrySocket } from "@/src/hooks/useTimeEntrySocket";
@@ -19,6 +19,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
+import PunchClock from "./PunchClock";
+import { NotesCell } from "@/src/components/custom/NotesCell";
 
 const fmtMins = (mins: number) => `${(mins / 60).toFixed(1)}h`;
 
@@ -131,8 +133,8 @@ const TimeEntryPage = () => {
     const totals = (data as any[])?.reduce(
       (acc: { pending: number; approved: number }, item: any) => {
         const status = item.status?.name?.toLowerCase();
-        if (status === "pending") acc.pending += item.duration;
-        if (status === "approved") acc.approved += item.duration;
+        if (status === "pending") acc.pending += item.duration ?? 0;
+        if (status === "approved") acc.approved += item.duration ?? 0;
         return acc;
       },
       { pending: 0, approved: 0 },
@@ -174,7 +176,11 @@ const TimeEntryPage = () => {
         }),
     },
     { accessorKey: "startTime", header: "Start Time" },
-    { accessorKey: "endTime", header: "End Time" },
+    {
+      accessorKey: "endTime",
+      header: "End Time",
+      cell: ({ row }) => row.original.endTime || "—",
+    },
     {
       accessorKey: "breakDuration",
       header: "Break Time",
@@ -188,12 +194,15 @@ const TimeEntryPage = () => {
     {
       accessorKey: "notes",
       header: "Notes",
-      size: 320,
-      cell: ({ row }) => (
-        <span className="wrap-break-word whitespace-normal block text-slate-500 dark:text-slate-400 text-sm">
-          {row.original.notes || "—"}
-        </span>
-      ),
+      size: 280,
+      cell: ({ row }) => {
+        const date = new Date(row.original.date).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        return <NotesCell notes={row.original.notes} subtitle={date} />;
+      },
     },
     {
       accessorKey: "status",
@@ -252,13 +261,10 @@ const TimeEntryPage = () => {
       <PageHeader
         title="My Time Entries"
         description="Track your daily work hours."
-        action={
-          <Button onClick={() => router.push("/time-entry/add")}>
-            <Plus className="size-4 mr-1" />
-            Add Entry
-          </Button>
-        }
       />
+
+      {/* Punch clock — clock in / lunch / clock out */}
+      <PunchClock onChanged={refetch} />
 
       <div className="flex gap-4 sm:flex-row flex-col" id="time-entry-stats">
         <Card className="border border-stat-amber-ring bg-stat-amber-card flex-1">

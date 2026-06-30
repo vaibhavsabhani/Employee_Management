@@ -57,6 +57,11 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   const crumbs: BreadcrumbItem[] = [{ label: "Home", href: "/" }];
 
   segments.forEach((seg, i) => {
+    // Skip the id ("Detail") crumb on view pages, e.g. /employees/:id/view
+    // should read Home / Employees / View.
+    const isId = UUID_RE.test(seg) || /^\d+$/.test(seg);
+    if (isId && segments[i + 1] === "view") return;
+
     const href = "/" + segments.slice(0, i + 1).join("/");
     const isLast = i === segments.length - 1;
     crumbs.push({ label: toLabel(seg), href: isLast ? undefined : href });
