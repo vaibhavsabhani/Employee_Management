@@ -250,7 +250,16 @@ const AdminTimeEntryPage = () => {
         }),
     },
     { accessorKey: "startTime", header: "Start" },
-    { accessorKey: "endTime", header: "End" },
+    {
+      accessorKey: "endTime",
+      header: "End",
+      cell: ({ row }) =>
+        row.original.endTime ?? (
+          <span className="text-xs text-amber-500 dark:text-amber-400">
+            In progress
+          </span>
+        ),
+    },
     {
       accessorKey: "breakDuration",
       header: "Break",
@@ -312,6 +321,15 @@ const AdminTimeEntryPage = () => {
         if (sid === 3)
           return (
             <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+          );
+
+        // In-progress entries (clocked in, not yet clocked out) can't be
+        // actioned — they auto-finalise on clock-out.
+        if (!row.original.endTime)
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              Awaiting clock-out
+            </span>
           );
 
         const approveBtn = (

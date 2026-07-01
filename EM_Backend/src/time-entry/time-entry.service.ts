@@ -30,24 +30,40 @@ export class TimeEntryService {
     return hours * 60 + minutes;
   }
 
-  /** Current wall-clock time as a "HH:mm" string (server local time). */
+  /**
+   * App timezone used for all wall-clock calculations. The server may run in
+   * UTC (e.g. Vercel), but punch times and day boundaries must reflect the
+   * business timezone — Indian Standard Time — not the server's locale.
+   */
+  private readonly TZ = process.env.APP_TIMEZONE ?? 'Asia/Kolkata';
+
+  /** Current wall-clock time as a "HH:mm" string in the app timezone (IST). */
   private nowHHmm(now: Date): string {
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    return `${h}:${m}`;
+    const hhmm = new Intl.DateTimeFormat('en-GB', {
+      timeZone: this.TZ,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(now);
+    // Some ICU builds format midnight as "24:00"; normalise to "00:00".
+    return hhmm.startsWith('24:') ? `00:${hhmm.slice(3)}` : hhmm;
   }
 
-  /** Start of today (server local time) used as the entry `date`. */
-  private todayStart(): Date {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
-
-  /** Today's date as "YYYY-MM-DD" (server local time). */
+  /** Today's date as "YYYY-MM-DD" in the app timezone (IST). */
   private todayDateStr(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    // 'en-CA' formats as YYYY-MM-DD.
+    return new Intl.DateTimeFormat('en-CA', { timeZone: this.TZ }).format(
+      new Date(),
+    );
+  }
+
+  /**
+   * Canonical start-of-day for today's IST date, expressed as UTC midnight of
+   * that calendar date. Used consistently as the entry/attendance `date` so
+   * lookups and writes always agree.
+   */
+  private todayStart(): Date {
+    return new Date(`${this.todayDateStr()}T00:00:00.000Z`);
   }
 
   /** The employee's approved leave covering today, if any. */
@@ -68,8 +84,7 @@ export class TimeEntryService {
   /** Find today's punch entry for an employee, if any. */
   private async findTodayEntry(employeeId: string) {
     const start = this.todayStart();
-    const end = new Date(start);
-    end.setHours(23, 59, 59, 999);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
 
     return this.prisma.timeEntry.findFirst({
       where: {
@@ -156,8 +171,7 @@ export class TimeEntryService {
       );
     }
 
-    const dateStr = this.todayDateStr();
-    const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
+    const dayStart = this.todayStart();
 
     // Block clock-in when on approved leave today — unless it's a half day.
     const leave = await this.todayApprovedLeave(employeeId);
@@ -583,9 +597,9 @@ export class TimeEntryService {
 
     const where: any = {
       isActive: true,
-      // Hide in-progress entries (clocked in but not yet clocked out) from
-      // admin review — only finalised entries should be approvable.
-      endTime: { not: null },
+      // In-progress entries (clocked in, not yet clocked out) are shown so
+      // admins can see who is currently working. They stay pending and are
+      // only approvable once finalised (see the frontend actions column).
     };
 
     if (employeeId) {
