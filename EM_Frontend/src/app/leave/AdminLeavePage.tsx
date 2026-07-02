@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { useSearchParams } from "next/navigation";
 
 type DraftFilters = {
   employeeName: string;
@@ -40,15 +41,6 @@ type DraftFilters = {
   leaveTypeId: string;
   startDate: string;
   endDate: string;
-};
-
-const defaultFilters = {
-  statusId: "",
-  employeeName: "",
-  employeeEmail: "",
-  leaveTypeId: "",
-  startDate: "",
-  endDate: "",
 };
 
 const AdminLeaveFilterPanel = ({
@@ -65,19 +57,27 @@ const AdminLeaveFilterPanel = ({
 }) => (
   <div className="flex flex-col xl:flex-row xl:items-end gap-4 p-3 w-full">
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Employee Name</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Employee Name
+      </label>
       <Input
         placeholder="Search by name..."
         value={draft.employeeName}
-        onChange={(e) => setDraft((prev) => ({ ...prev, employeeName: e.target.value }))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, employeeName: e.target.value }))
+        }
       />
     </div>
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Employee Email</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Employee Email
+      </label>
       <Input
         placeholder="Search by email..."
         value={draft.employeeEmail}
-        onChange={(e) => setDraft((prev) => ({ ...prev, employeeEmail: e.target.value }))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, employeeEmail: e.target.value }))
+        }
       />
     </div>
     <div className="flex-1 min-w-0">
@@ -115,10 +115,17 @@ const AdminLeaveFilterPanel = ({
       />
     </div>
     <div className="flex gap-3 xl:pb-0 pb-1 shrink-0">
-      <Button onClick={onApply} className="flex-1 xl:flex-none h-10 px-6 bg-sidebar-primary hover:bg-violet-700 text-white">
+      <Button
+        onClick={onApply}
+        className="flex-1 xl:flex-none h-10 px-6 bg-sidebar-primary hover:bg-violet-700 text-white"
+      >
         Apply filter
       </Button>
-      <Button onClick={onReset} variant="outline" className="flex-1 xl:flex-none h-10 px-6">
+      <Button
+        onClick={onReset}
+        variant="outline"
+        className="flex-1 xl:flex-none h-10 px-6"
+      >
         Reset filter
       </Button>
     </div>
@@ -129,10 +136,27 @@ const AdminLeavePage = () => {
   const [getLeaves] = useLazyGetLeavesQuery();
   const [updateStatus] = useUpdateLeaveStatusMutation();
 
-  // per-row loading: tracks which leaveId is currently being actioned
-  const [rowLoading, setRowLoading] = useState<Record<string, "approve" | "reject" | null>>({});
+  const searchparams = useSearchParams();
+  const isPendingTab = searchparams.get("pending");
 
-  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; leaveId: string | null }>({
+  const defaultFilters = {
+    statusId: isPendingTab ? "1" : "",
+    employeeName: "",
+    employeeEmail: "",
+    leaveTypeId: "",
+    startDate: "",
+    endDate: "",
+  };
+
+  // per-row loading: tracks which leaveId is currently being actioned
+  const [rowLoading, setRowLoading] = useState<
+    Record<string, "approve" | "reject" | null>
+  >({});
+
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean;
+    leaveId: string | null;
+  }>({
     open: false,
     leaveId: null,
   });
@@ -159,8 +183,21 @@ const AdminLeavePage = () => {
   );
 
   const {
-    data, loading, page, nextPage, prevPage, canNext, canPrev,
-    updateFilters, filters, totalPages, total, limit, setLimit, resetLimit, refetch,
+    data,
+    loading,
+    page,
+    nextPage,
+    prevPage,
+    canNext,
+    canPrev,
+    updateFilters,
+    filters,
+    totalPages,
+    total,
+    limit,
+    setLimit,
+    resetLimit,
+    refetch,
   } = usePaginatedQuery(fetchLeaves, { defaultFilters, transformResponse });
 
   // auto-refresh table when a new leave request arrives via socket
@@ -172,9 +209,18 @@ const AdminLeavePage = () => {
 
   const activeStatus = (filters as any)?.statusId ?? "";
 
-  const handleApply = () => { resetLimit(); updateFilters({ ...(filters as any), ...draft }); };
+  const handleApply = () => {
+    resetLimit();
+    updateFilters({ ...(filters as any), ...draft });
+  };
   const handleReset = () => {
-    setDraft({ employeeName: "", employeeEmail: "", leaveTypeId: "", startDate: "", endDate: "" });
+    setDraft({
+      employeeName: "",
+      employeeEmail: "",
+      leaveTypeId: "",
+      startDate: "",
+      endDate: "",
+    });
     resetLimit();
     updateFilters(defaultFilters);
   };
@@ -227,10 +273,16 @@ const AdminLeavePage = () => {
         const e = row.original.employee;
         return e ? (
           <div>
-            <p className="font-medium text-sm">{e.firstName} {e.lastName}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{e.email}</p>
+            <p className="font-medium text-sm">
+              {e.firstName} {e.lastName}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {e.email}
+            </p>
           </div>
-        ) : "—";
+        ) : (
+          "—"
+        );
       },
     },
     {
@@ -240,23 +292,35 @@ const AdminLeavePage = () => {
         const id: number = row.original.leaveTypeId;
         const t = LEAVE_TYPE_MAP[id];
         return t ? (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${t.className}`}>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${t.className}`}
+          >
             {t.label}
           </span>
-        ) : row.original.leaveType?.name ?? "—";
+        ) : (
+          (row.original.leaveType?.name ?? "—")
+        );
       },
     },
     {
       accessorKey: "startDate",
       header: "From",
       cell: ({ row }) =>
-        new Date(row.original.startDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        new Date(row.original.startDate).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
     },
     {
       accessorKey: "endDate",
       header: "To",
       cell: ({ row }) =>
-        new Date(row.original.endDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        new Date(row.original.endDate).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
     },
     {
       accessorKey: "totalDays",
@@ -286,7 +350,9 @@ const AdminLeavePage = () => {
           <NotesCell
             notes={l.reason}
             title="Leave Reason"
-            subtitle={[name, l.leaveType?.name, date].filter(Boolean).join(" · ")}
+            subtitle={[name, l.leaveType?.name, date]
+              .filter(Boolean)
+              .join(" · ")}
           />
         );
       },
@@ -296,9 +362,14 @@ const AdminLeavePage = () => {
       header: "Status",
       cell: ({ row }) => {
         const sid: number = row.original.statusId;
-        const s = LEAVE_STATUS_MAP[sid] ?? { label: "Unknown", className: "bg-slate-100 text-slate-600" };
+        const s = LEAVE_STATUS_MAP[sid] ?? {
+          label: "Unknown",
+          className: "bg-slate-100 text-slate-600",
+        };
         return (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.className}`}>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.className}`}
+          >
             {s.label}
           </span>
         );
@@ -313,7 +384,12 @@ const AdminLeavePage = () => {
         const id: string = row.original.id;
         const rowState = rowLoading[id];
 
-        if (sid !== 1) return <span className="text-xs text-slate-400 dark:text-slate-500">—</span>;
+        if (sid !== 1)
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              —
+            </span>
+          );
 
         return (
           <div className="flex items-center gap-2 flex-nowrap">
@@ -359,14 +435,22 @@ const AdminLeavePage = () => {
       />
 
       <Filter>
-        <AdminLeaveFilterPanel draft={draft} setDraft={setDraft} onApply={handleApply} onReset={handleReset} />
+        <AdminLeaveFilterPanel
+          draft={draft}
+          setDraft={setDraft}
+          onApply={handleApply}
+          onReset={handleReset}
+        />
       </Filter>
 
       <div className="flex gap-2 flex-wrap" id="admin-leave-status-filter">
         {LEAVE_STATUS.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => { resetLimit(); updateFilters({ ...(filters as any), statusId: tab.value }); }}
+            onClick={() => {
+              resetLimit();
+              updateFilters({ ...(filters as any), statusId: tab.value });
+            }}
             className={`cursor-pointer px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
               activeStatus === tab.value
                 ? "bg-sidebar-primary text-white border-sidebar-primary"

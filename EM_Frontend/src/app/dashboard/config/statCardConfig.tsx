@@ -22,6 +22,7 @@ const statCardConfig = (s: any) => {
       icon: Users,
       color: PALETTE.violet,
       gradient: "bg-linear-to-br from-violet-600 to-violet-800",
+      navigateTo: "/employees"
     },
     {
       label: "Today Present",
@@ -30,6 +31,7 @@ const statCardConfig = (s: any) => {
       icon: UserCheck,
       color: PALETTE.green,
       gradient: "bg-linear-to-br from-emerald-500 to-emerald-700",
+      navigateTo: "/attendance?present=true"
     },
     {
       label: "Today Absent",
@@ -38,6 +40,7 @@ const statCardConfig = (s: any) => {
       icon: XCircle,
       color: PALETTE.red,
       gradient: "bg-linear-to-br from-red-500 to-red-700",
+      navigateTo: "/attendance?absent=true"
     },
     {
       label: "On Leave Today",
@@ -46,6 +49,7 @@ const statCardConfig = (s: any) => {
       icon: CalendarDays,
       color: PALETTE.amber,
       gradient: "bg-linear-to-br from-amber-500 to-amber-700",
+      navigateTo: "/leave"
     },
     {
       label: "Pending Time Entries",
@@ -54,6 +58,7 @@ const statCardConfig = (s: any) => {
       icon: Clock,
       color: PALETTE.blue,
       gradient: "bg-linear-to-br from-blue-500 to-blue-700",
+      navigateTo: "/time-entry?pending=true"
     },
     {
       label: "Pending Leaves",
@@ -62,6 +67,7 @@ const statCardConfig = (s: any) => {
       icon: AlertCircle,
       color: PALETTE.amber,
       gradient: "bg-linear-to-br from-orange-500 to-orange-700",
+      navigateTo: "/leave?pending=true"
     },
     {
       label: "Approved Hrs (Month)",
@@ -70,6 +76,7 @@ const statCardConfig = (s: any) => {
       icon: CheckCircle2,
       color: PALETTE.green,
       gradient: "bg-linear-to-br from-teal-500 to-teal-700",
+      navigateTo: "/time-entry?approved=true"
     },
     {
       label: "Inactive Employees",
@@ -78,6 +85,7 @@ const statCardConfig = (s: any) => {
       icon: Building2,
       color: PALETTE.slate,
       gradient: "bg-linear-to-br from-slate-500 to-slate-700",
+      navigateTo: "/employees?inactive=true"
     },
   ];
 };

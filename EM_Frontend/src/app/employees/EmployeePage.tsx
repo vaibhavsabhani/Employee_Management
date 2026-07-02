@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   Eye,
@@ -97,6 +97,8 @@ const STATUS_TABS = [
 const EmployeePage = () => {
   const router = useRouter();
   const role = useRole();
+  const searchParams = useSearchParams();
+  const isInActiveTab = searchParams.get("inactive");
   const isSuperAdmin = role === ROLES.SUPER_ADMIN;
 
   const [getEmployees] = useLazyGetEmployeesQuery();
@@ -112,7 +114,7 @@ const EmployeePage = () => {
   const defaultEmployeeFilters = {
     search: "",
     email: "",
-    isActive: "true",
+    isActive: isInActiveTab ? "false" : "true",
     role: isSuperAdmin ? "" : ROLES.EMPLOYEE,
   };
 

@@ -20,6 +20,7 @@ import { Input } from "@/src/components/ui/input";
 import { AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTimeEntrySocket } from "@/src/hooks/useTimeEntrySocket";
+import { useSearchParams } from "next/navigation";
 
 const fmtMins = (mins: number) => `${(mins / 60).toFixed(1)}h`;
 
@@ -28,14 +29,6 @@ type DraftFilters = {
   employeeEmail: string;
   startDate: string;
   endDate: string;
-};
-
-const defaultFilters = {
-  statusId: "",
-  employeeName: "",
-  employeeEmail: "",
-  startDate: "",
-  endDate: "",
 };
 
 const AdminFilterPanel = ({
@@ -52,26 +45,36 @@ const AdminFilterPanel = ({
 }) => (
   <div className="flex flex-col xl:flex-row xl:items-end gap-4 p-3 w-full">
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Employee Name</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Employee Name
+      </label>
       <Input
         placeholder="Search by name..."
         value={draft.employeeName}
-        onChange={(e) => setDraft((prev) => ({ ...prev, employeeName: e.target.value }))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, employeeName: e.target.value }))
+        }
       />
     </div>
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Employee Email</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Employee Email
+      </label>
       <Input
         placeholder="Search by email..."
         value={draft.employeeEmail}
-        onChange={(e) => setDraft((prev) => ({ ...prev, employeeEmail: e.target.value }))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, employeeEmail: e.target.value }))
+        }
       />
     </div>
     <div className="flex-1 min-w-0">
       <label className="block text-sm font-semibold mb-1.5">From Date</label>
       <DateInput
         value={draft.startDate}
-        onChange={(date) => setDraft((prev) => ({ ...prev, startDate: date ?? "" }))}
+        onChange={(date) =>
+          setDraft((prev) => ({ ...prev, startDate: date ?? "" }))
+        }
         maxDate={draft.endDate ? new Date(draft.endDate) : undefined}
       />
     </div>
@@ -79,7 +82,9 @@ const AdminFilterPanel = ({
       <label className="block text-sm font-semibold mb-1.5">To Date</label>
       <DateInput
         value={draft.endDate}
-        onChange={(date) => setDraft((prev) => ({ ...prev, endDate: date ?? "" }))}
+        onChange={(date) =>
+          setDraft((prev) => ({ ...prev, endDate: date ?? "" }))
+        }
         minDate={draft.startDate ? new Date(draft.startDate) : undefined}
       />
     </div>
@@ -104,9 +109,22 @@ const AdminFilterPanel = ({
 const AdminTimeEntryPage = () => {
   const [getTimeEntries] = useLazyGetTimeEntriesQuery();
   const [updateStatus] = useUpdateTimeEntryStatusMutation();
+  const searchparams = useSearchParams();
+  const isPendingTab = searchparams.get("pending");
+  const isApprovedTab = searchparams.get("approved");
+
+  const defaultFilters = {
+    statusId: isPendingTab ? "1" : isApprovedTab ? "2" : "",
+    employeeName: "",
+    employeeEmail: "",
+    startDate: "",
+    endDate: "",
+  };
 
   // per-row loading: tracks which entryId is being actioned
-  const [rowLoading, setRowLoading] = useState<Record<string, "approve" | "reject" | null>>({});
+  const [rowLoading, setRowLoading] = useState<
+    Record<string, "approve" | "reject" | null>
+  >({});
   const [isRejecting, setIsRejecting] = useState(false);
 
   const [rejectDialog, setRejectDialog] = useState<{
@@ -176,7 +194,12 @@ const AdminTimeEntryPage = () => {
   };
 
   const handleResetFilter = () => {
-    setDraft({ employeeName: "", employeeEmail: "", startDate: "", endDate: "" });
+    setDraft({
+      employeeName: "",
+      employeeEmail: "",
+      startDate: "",
+      endDate: "",
+    });
     resetLimit();
     updateFilters(defaultFilters);
   };
@@ -232,7 +255,9 @@ const AdminTimeEntryPage = () => {
             <p className="font-medium text-sm">
               {e.firstName} {e.lastName}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{e.email}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {e.email}
+            </p>
           </div>
         ) : (
           "—"
@@ -320,7 +345,9 @@ const AdminTimeEntryPage = () => {
         // Rejected entries are awaiting the employee's resubmission.
         if (sid === 3)
           return (
-            <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              —
+            </span>
           );
 
         // In-progress entries (clocked in, not yet clocked out) can't be

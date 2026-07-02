@@ -31,35 +31,39 @@ import {
   CircleDashed,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-const STAT_COLORS: Record<string, { card: string; icon: string; label: string; value: string }> = {
+const STAT_COLORS: Record<
+  string,
+  { card: string; icon: string; label: string; value: string }
+> = {
   slate: {
-    card:  "border border-stat-slate-ring bg-stat-slate-card",
-    icon:  "bg-stat-slate-icon text-stat-slate-icon-fg",
+    card: "border border-stat-slate-ring bg-stat-slate-card",
+    icon: "bg-stat-slate-icon text-stat-slate-icon-fg",
     label: "text-stat-slate-label",
     value: "text-stat-slate-value",
   },
   green: {
-    card:  "border border-stat-green-ring bg-stat-green-card",
-    icon:  "bg-stat-green-icon text-stat-green-icon-fg",
+    card: "border border-stat-green-ring bg-stat-green-card",
+    icon: "bg-stat-green-icon text-stat-green-icon-fg",
     label: "text-stat-green-label",
     value: "text-stat-green-value",
   },
   blue: {
-    card:  "border border-stat-blue-ring bg-stat-blue-card",
-    icon:  "bg-stat-blue-icon text-stat-blue-icon-fg",
+    card: "border border-stat-blue-ring bg-stat-blue-card",
+    icon: "bg-stat-blue-icon text-stat-blue-icon-fg",
     label: "text-stat-blue-label",
     value: "text-stat-blue-value",
   },
   red: {
-    card:  "border border-stat-red-ring bg-stat-red-card",
-    icon:  "bg-stat-red-icon text-stat-red-icon-fg",
+    card: "border border-stat-red-ring bg-stat-red-card",
+    icon: "bg-stat-red-icon text-stat-red-icon-fg",
     label: "text-stat-red-label",
     value: "text-stat-red-value",
   },
   amber: {
-    card:  "border border-stat-amber-ring bg-stat-amber-card",
-    icon:  "bg-stat-amber-icon text-stat-amber-icon-fg",
+    card: "border border-stat-amber-ring bg-stat-amber-card",
+    icon: "bg-stat-amber-icon text-stat-amber-icon-fg",
     label: "text-stat-amber-label",
     value: "text-stat-amber-value",
   },
@@ -114,26 +118,41 @@ const EmployeeFilterPanel = ({
 }) => (
   <div className="flex flex-col xl:flex-row xl:items-end gap-4 p-3 w-full">
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Employee Name</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Employee Name
+      </label>
       <Input
         placeholder="Search by name..."
         value={draft.employeeName}
-        onChange={(e) => setDraft((p) => ({ ...p, employeeName: e.target.value }))}
+        onChange={(e) =>
+          setDraft((p) => ({ ...p, employeeName: e.target.value }))
+        }
       />
     </div>
     <div className="flex-1 min-w-0">
-      <label className="block text-sm font-semibold mb-1.5">Employee Email</label>
+      <label className="block text-sm font-semibold mb-1.5">
+        Employee Email
+      </label>
       <Input
         placeholder="Search by email..."
         value={draft.employeeEmail}
-        onChange={(e) => setDraft((p) => ({ ...p, employeeEmail: e.target.value }))}
+        onChange={(e) =>
+          setDraft((p) => ({ ...p, employeeEmail: e.target.value }))
+        }
       />
     </div>
     <div className="flex gap-3 xl:pb-0 pb-1 shrink-0">
-      <Button onClick={onApply} className="flex-1 xl:flex-none h-10 px-6 bg-sidebar-primary hover:bg-violet-700 text-white">
+      <Button
+        onClick={onApply}
+        className="flex-1 xl:flex-none h-10 px-6 bg-sidebar-primary hover:bg-violet-700 text-white"
+      >
         Apply filter
       </Button>
-      <Button onClick={onReset} variant="outline" className="flex-1 xl:flex-none h-10 px-6">
+      <Button
+        onClick={onReset}
+        variant="outline"
+        className="flex-1 xl:flex-none h-10 px-6"
+      >
         Reset filter
       </Button>
     </div>
@@ -141,12 +160,22 @@ const EmployeeFilterPanel = ({
 );
 
 const AttendancePage = () => {
+  const searchParams = useSearchParams();
+  const isPresentTab = searchParams.get("present")
+  const isAbsentTab = searchParams.get("absent")
   const today = localDateStr(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const [stats, setStats] = useState<AttendanceStats>({
-    total: 0, present: 0, onLeave: 0, absent: 0, notMarked: 0,
+    total: 0,
+    present: 0,
+    onLeave: 0,
+    absent: 0,
+    notMarked: 0,
   });
-  const [draft, setDraft] = useState<DraftFilters>({ employeeName: "", employeeEmail: "" });
+  const [draft, setDraft] = useState<DraftFilters>({
+    employeeName: "",
+    employeeEmail: "",
+  });
   const [markingId, setMarkingId] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
@@ -157,7 +186,12 @@ const AttendancePage = () => {
   const [getAttendance] = useLazyGetAttendanceQuery();
   const [markAttendance] = useMarkAttendanceMutation();
 
-  const defaultFilters = { date: today, statusFilter: "", employeeName: "", employeeEmail: "" };
+  const defaultFilters = {
+    date: today,
+    statusFilter: isPresentTab ? "present" : isAbsentTab ? "absent" : "",
+    employeeName: "",
+    employeeEmail: "",
+  };
 
   const fetchAttendance = useCallback(
     async ({ page, limit, ...filters }: any) => {
@@ -174,8 +208,21 @@ const AttendancePage = () => {
   );
 
   const {
-    data, loading, page, nextPage, prevPage, canNext, canPrev,
-    updateFilters, filters, totalPages, total, limit, setLimit, resetLimit, refetch,
+    data,
+    loading,
+    page,
+    nextPage,
+    prevPage,
+    canNext,
+    canPrev,
+    updateFilters,
+    filters,
+    totalPages,
+    total,
+    limit,
+    setLimit,
+    resetLimit,
+    refetch,
   } = usePaginatedQuery(fetchAttendance, { defaultFilters, transformResponse });
 
   const activeStatus = (filters as any)?.statusFilter ?? "";
@@ -199,7 +246,11 @@ const AttendancePage = () => {
   const handleMark = async (employeeId: string, statusId: number) => {
     setMarkingId(`${employeeId}-${statusId}`);
     try {
-      const res = await markAttendance({ employeeId, date: selectedDate, statusId }).unwrap();
+      const res = await markAttendance({
+        employeeId,
+        date: selectedDate,
+        statusId,
+      }).unwrap();
       Toast(res);
       refetch();
     } catch (err: any) {
@@ -217,8 +268,12 @@ const AttendancePage = () => {
         const e = row.original.employee;
         return (
           <div>
-            <p className="font-medium text-sm">{e.firstName} {e.lastName}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{e.email}</p>
+            <p className="font-medium text-sm">
+              {e.firstName} {e.lastName}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {e.email}
+            </p>
           </div>
         );
       },
@@ -232,7 +287,9 @@ const AttendancePage = () => {
           className: "bg-slate-100 text-slate-600",
         };
         return (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.className}`}>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.className}`}
+          >
             {s.label}
           </span>
         );
@@ -242,16 +299,27 @@ const AttendancePage = () => {
       accessorKey: "leave",
       header: "Leave Type",
       cell: ({ row }) => {
-        if (row.original.effectiveStatus !== "on-leave" || !row.original.leave) {
-          return <span className="text-slate-400 dark:text-slate-500 text-sm">—</span>;
+        if (
+          row.original.effectiveStatus !== "on-leave" ||
+          !row.original.leave
+        ) {
+          return (
+            <span className="text-slate-400 dark:text-slate-500 text-sm">
+              —
+            </span>
+          );
         }
         const id: number = row.original.leave.leaveTypeId;
         const t = LEAVE_TYPE_MAP[id];
         return t ? (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${t.className}`}>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${t.className}`}
+          >
             {t.label}
           </span>
-        ) : row.original.leave.leaveType?.name ?? "—";
+        ) : (
+          (row.original.leave.leaveType?.name ?? "—")
+        );
       },
     },
     {
@@ -276,7 +344,11 @@ const AttendancePage = () => {
         const empId: string = row.original.employee.id;
 
         if (status === "on-leave") {
-          return <span className="text-xs text-slate-400 dark:text-slate-500 italic">Auto-marked (On Leave)</span>;
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+              Auto-marked (On Leave)
+            </span>
+          );
         }
 
         // Once marked (incl. auto-marked on clock-in), only a super admin
@@ -351,7 +423,9 @@ const AttendancePage = () => {
                 {formatDisplayDate(selectedDate)}
               </p>
               {selectedDate === today && (
-                <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">Today</span>
+                <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                  Today
+                </span>
               )}
             </div>
 
@@ -372,13 +446,20 @@ const AttendancePage = () => {
               type="date"
               value={selectedDate}
               max={today}
-              onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+              onChange={(e) =>
+                e.target.value && setSelectedDate(e.target.value)
+              }
               className="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
 
           {selectedDate !== today && (
-            <Button variant="outline" size="sm" className="shrink-0 h-9" onClick={() => setSelectedDate(today)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 h-9"
+              onClick={() => setSelectedDate(today)}
+            >
               Go to Today
             </Button>
           )}
@@ -386,13 +467,31 @@ const AttendancePage = () => {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3" id="attendance-stats">
+      <div
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3"
+        id="attendance-stats"
+      >
         {[
           { label: "Total", value: stats.total, icon: Users, color: "slate" },
-          { label: "Present", value: stats.present, icon: UserCheck, color: "green" },
-          { label: "On Leave", value: stats.onLeave, icon: Plane, color: "blue" },
+          {
+            label: "Present",
+            value: stats.present,
+            icon: UserCheck,
+            color: "green",
+          },
+          {
+            label: "On Leave",
+            value: stats.onLeave,
+            icon: Plane,
+            color: "blue",
+          },
           { label: "Absent", value: stats.absent, icon: UserX, color: "red" },
-          { label: "Not Marked", value: stats.notMarked, icon: CircleDashed, color: "amber" },
+          {
+            label: "Not Marked",
+            value: stats.notMarked,
+            icon: CircleDashed,
+            color: "amber",
+          },
         ].map(({ label, value, icon: Icon, color }) => {
           const c = STAT_COLORS[color];
           return (
@@ -402,7 +501,11 @@ const AttendancePage = () => {
                   <Icon className="size-4" />
                 </div>
                 <div>
-                  <p className={`text-xs font-medium uppercase tracking-wide ${c.label}`}>{label}</p>
+                  <p
+                    className={`text-xs font-medium uppercase tracking-wide ${c.label}`}
+                  >
+                    {label}
+                  </p>
                   <p className={`text-xl font-bold ${c.value}`}>{value}</p>
                 </div>
               </CardContent>
@@ -426,7 +529,10 @@ const AttendancePage = () => {
         {ATTENDANCE_STATUS_FILTER.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => { resetLimit(); updateFilters({ statusFilter: tab.value }); }}
+            onClick={() => {
+              resetLimit();
+              updateFilters({ statusFilter: tab.value });
+            }}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
               activeStatus === tab.value
                 ? "bg-sidebar-primary text-white border-sidebar-primary"
@@ -456,7 +562,11 @@ const AttendancePage = () => {
         totalRecords={total}
         limit={limit}
         setLimit={setLimit}
-        showExtraHeader={["attendance-stats", "attendance-status-filter", "pageHeading"]}
+        showExtraHeader={[
+          "attendance-stats",
+          "attendance-status-filter",
+          "pageHeading",
+        ]}
       />
     </div>
   );

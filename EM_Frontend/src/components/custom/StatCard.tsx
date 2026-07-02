@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 interface StatCardProps {
   icon: React.ElementType;
   label: string;
@@ -5,6 +9,7 @@ interface StatCardProps {
   sub?: string;
   color: string;
   gradient: string;
+  navigateTo?: string;
 }
 
 export const StatCard = ({
@@ -14,10 +19,17 @@ export const StatCard = ({
   sub,
   color,
   gradient,
+  navigateTo
 }: StatCardProps) => {
+  const router = useRouter();
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl p-5 ${gradient} border border-white/10`}
+      className={`relative overflow-hidden rounded-2xl p-5 ${gradient} border border-white/10 cursor-pointer`}
+      onClick={() => {
+        if (navigateTo) {
+          router.push(navigateTo);
+        }
+      }}
     >
       <div className="flex items-start justify-between">
         <div>

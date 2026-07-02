@@ -64,6 +64,7 @@ export default function AdminDashboard() {
             sub={c.sub}
             color={c.color}
             gradient={c.gradient}
+            navigateTo={c.navigateTo}
           />
         ))}
       </div>
