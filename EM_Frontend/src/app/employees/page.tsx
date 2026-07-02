@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import EmployeePage from "./EmployeePage";
 
 export default function Page() {
-  return <EmployeePage />;
+  return (
+    <Suspense fallback={null}>
+      <EmployeePage />
+    </Suspense>
+  );
 }
